@@ -42,7 +42,7 @@ h2{font-size:16px;font-weight:700;margin-bottom:12px}
 #tabbar svg{width:23px;height:23px}
 
 /* hero */
-.hero{position:relative;min-height:calc(300px + var(--st));padding:calc(var(--st) + 14px) 20px 60px;color:#fff;
+.hero{position:relative;min-height:calc(190px + var(--st));padding:calc(var(--st) + 14px) 20px 52px;color:#fff;
   background:
    radial-gradient(circle at 12% 18%,#f5c400 0 5px,transparent 6px),radial-gradient(circle at 30% 40%,#e5484d 0 6px,transparent 7px),
    radial-gradient(circle at 72% 22%,#1e88e5 0 5px,transparent 6px),radial-gradient(circle at 85% 55%,#22a06b 0 7px,transparent 8px),
@@ -51,10 +51,10 @@ h2{font-size:16px;font-weight:700;margin-bottom:12px}
    linear-gradient(160deg,#5b5f63,#2c2f31 60%,#1a1c1d)}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.1) 50%,rgba(0,0,0,.45))}
 .hero>*{position:relative;z-index:1}
-.hero h1{font-size:30px;line-height:1.15;margin:28px 0 0;display:block}
+.hero h1{font-size:26px;line-height:1.15;margin:18px 0 0;display:block}
 .hero .top{display:flex;justify-content:flex-end}
 .hero .top button{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;backdrop-filter:blur(8px)}
-.overlap{margin-top:-40px;position:relative;z-index:2;padding:0 16px}
+.overlap{margin-top:-32px;position:relative;z-index:2;padding:0 16px}
 .stats3{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
 .stats3 b{display:block;font-size:26px;font-weight:700}
 .stats3>div+div{border-left:1px solid var(--line)}
@@ -73,8 +73,8 @@ h2{font-size:16px;font-weight:700;margin-bottom:12px}
 .pills{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto}
 .pills button{padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap;color:#444}
 .pills button.on{background:var(--green);color:#fff;font-weight:600}
-.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
-.mgrid button{padding:8px 0;border-radius:10px;font-size:13px;background:#fff;color:#444}
+.mgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-bottom:14px}
+.mgrid button{padding:6px 0;border-radius:8px;font-size:11px;background:#fff;color:#444;white-space:nowrap}
 .mgrid button.on{background:var(--green);color:#fff;font-weight:600}
 .mgrid button:first-child{grid-column:span 2}
 .search{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:14px;color:var(--muted)}
@@ -268,6 +268,17 @@ function normalizeRoute(r){
 const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 const RANK = { test:0, nope:1, zona:2, top:3, flash:4 };
 const BASE_KEYS = [['visits','Wizyty'],['fives','Piąteczki'],['sixes','Szósteczki'],['comps','Zawody']];
+const DEFAULT_WALLS = [
+  { name:'Noise', sectors:['Slab','Maska','Front','Kaskady','Dach','12°','Niski slab','Grota','Wyspa','Brama','Spray'] },
+  { name:'Flow Długosza', sectors:['Wejściowy połóg','Soczewka','20/10','Prawy dach','Lewy dach','15°','Prawy diament','Lewy diament','Końcowy połóg','Comp wall','20°','Sprawy wall'] },
+  { name:'Lokal 32', sectors:['Grotka','Lewa strona','Prawa strona','Połóg','Krab','Lewy Pion','Prawy Pion','Lewe okna','Prawe okna','Przewis','Logo','Dziób'] },
+  { name:'Flow Robotnicza', sectors:['Prawe zacięcie','Przedkant','Prawa pochylnia','Lewa pochylnia','23°','Wcięcie','Końcowy połóg','Lewe zacięcie','Light','Soczewka','Kant','Koniec lightu','Zatoka 1','Zatoka 2','Sprawy wall'] },
+  { name:'Groto', sectors:['Duży sześciokąt','Mały sześciokąt','Prawe zacięcie','Beczka','Piony','Kaskady','Diament','Wu','Połóg','Tył wieży','Groto'] },
+  { name:'Groto Poznań', sectors:['Comp wall','Góral','Beczka','Tyły','Daszek','Grzybnia','Brama','Dziób','Antresola','Przy wejściu','Pod antresolą','Lewa strona','Przód','Prawa strona','Tył','Lewa wieża','Prawa wieża','Prawa Grota','Lewa Grota'] },
+  { name:'Fpinka', sectors:['Góra','Antresola'] },
+  { name:'West', sectors:['Kids wall','Plaża','Maczuga','Skrzydło','Duży przewis','Beczka','Przecinek','25°','Klepsydra','Duży pion','Duży połóg','15°','Spray wall','Lodowisko','Złamany pion','Kometa','Front','Sanki','Mały połóg','Kilter board','Campus'] },
+];
+const OLD_DEFAULT_WALLS = ['Boulderownia Wrocław','Boulderowania Wrocław','Strefa Wspinaczkowa','Srefa Wspinaczkowa','Skarpa Bytom'];
 function normalizeWall(w){
   const b = w.base || {};
   return { id:w.id, name:String(w.name), city:String(w.city || ''),
@@ -315,20 +326,22 @@ function pl(n, one, few, many){
 }
 const kcell = (icon, color, n, label, extra = '') => `<div ${extra}><span style="color:${color};display:block">${icon}</span><b>${n}</b><span class="muted">${label}</span></div>`;
 // rząd 1: statusy, rząd 2: zrobione / do zrobienia / niezrobione
-function routesKpi(list, links){
+function routesKpi(list, links, interactiveStatus = false){
   const c = s => list.filter(r => r.status === s).length;
   const link = f => links ? `onclick="S.filter='${f}';go('routes')" style="cursor:pointer"` : '';
+  const gradeTap = s => `role="button" tabindex="0" title="Pokaż poziomy: ${STATUSES[s].label}" onclick="toggleGradeStatus('${s}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleGradeStatus('${s}')}" style="cursor:pointer"`;
+  const unfinished = r => r.status !== 'test' && !DONE(r.status);
   return `
     <div class="kpi kc kc4">
-      ${kcell(I.bolt, 'var(--orange)', c('flash'), 'flash')}
-      ${kcell(I.check, 'var(--green-2)', c('top'), 'top')}
+      ${kcell(I.bolt, 'var(--orange)', c('flash'), 'flash', interactiveStatus ? gradeTap('flash') : '')}
+      ${kcell(I.check, 'var(--green-2)', c('top'), 'top', interactiveStatus ? gradeTap('top') : '')}
       ${kcell(I.star, '#3e63dd', c('zona'), 'zona')}
       ${kcell(I.x, 'var(--red)', c('nope'), 'nope')}
     </div>
     <div class="kpi kc kc3" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line)">
       ${kcell(I.mount, 'var(--green)', list.filter(r => DONE(r.status)).length, 'zrobione', 'class="sum"')}
-      ${kcell(I.retry, '#3e63dd', list.filter(r => !DONE(r.status) && !r.removed).length, 'do zrobienia' + (links ? ' ›' : ''), link('todo'))}
-      ${kcell(I.x, 'var(--muted)', list.filter(r => !DONE(r.status) && r.removed).length, 'niezrobione' + (links ? ' ›' : ''), link('gone'))}
+      ${kcell(I.retry, '#3e63dd', list.filter(r => unfinished(r) && !r.removed).length, 'do zrobienia' + (links ? ' ›' : ''), link('todo'))}
+      ${kcell(I.x, 'var(--muted)', list.filter(r => unfinished(r) && r.removed).length, 'niezrobione' + (links ? ' ›' : ''), link('gone'))}
     </div>`;
 }
 function statusSummary(list){
@@ -378,8 +391,8 @@ const DB = {
 };
 
 /* ---------- stan ---------- */
-let D = { walls:[], routes:[], months:{}, visits:[], settings:{ name:'Wspinaczu' } };
-let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, detail:null, wall:null };
+let D = { walls:[], routes:[], months:{}, visits:[], settings:{ name:'Wspinaczu', homePrompt:'Co dzisiaj wpadło?' } };
+let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', periodYear:String(new Date().getFullYear()), gradeStatus:null, metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, detail:null, wall:null };
 let F = null; // stan formularza
 
 async function save(){
@@ -391,14 +404,9 @@ async function init(){
   await DB.open();
   const saved = await DB.get('data');
   if(saved){ D = Object.assign(D, saved); D.routes = D.routes.map(normalizeRoute); D.walls = D.walls.map(normalizeWall); D.months = normalizeMonths(D.months); D.visits = normalizeVisits(D.visits); }
-  else {
-    D.walls = [
-      { id:uid(), name:'Boulderownia Wrocław', city:'Wrocław' },
-      { id:uid(), name:'Strefa Wspinaczkowa', city:'Warszawa' },
-      { id:uid(), name:'Skarpa Bytom', city:'Bytom' },
-    ].map(normalizeWall);
-    await save();
-  }
+  D.settings = Object.assign({ name:'Wspinaczu', homePrompt:'Co dzisiaj wpadło?' }, D.settings || {});
+  ensureDefaultWalls();
+  await save();
   setupPwa();
   render();
 }
@@ -422,6 +430,14 @@ function openWall(id){ S.wall = id; S.detail = null; render(); $main.scrollTop =
 
 const wallName = id => (D.walls.find(w => w.id === id) || {}).name || 'Nieznana ścianka';
 const wallOf = id => D.walls.find(w => w.id === id);
+function ensureDefaultWalls(){
+  D.walls = D.walls.filter(w => !OLD_DEFAULT_WALLS.includes(w.name) || D.routes.some(r => r.wallId === w.id) || D.visits.some(v => v.wallId === w.id));
+  DEFAULT_WALLS.forEach(def => {
+    let wall = D.walls.find(w => w.name === def.name);
+    if(!wall){ wall = normalizeWall({ id:uid(), name:def.name }); D.walls.push(wall); }
+    wall.sectors = [...new Set([...def.sectors, ...wall.sectors])];
+  });
+}
 function setSecF(i){ S.secF = i < 0 ? null : wallOf(S.wallF).sectors[i]; render(); }
 function pickSector(i){ const s = wallOf(F.wallId).sectors[i]; F.sector = F.sector === s ? null : s; renderForm(); }
 async function addSector(wallId, forForm){
@@ -459,7 +475,7 @@ function viewHome(){
   return `
   <div class="hero">
     <div class="top"><button onclick="go('profile')" aria-label="Ustawienia">${I.gear}</button></div>
-    <h1>Hej ${esc(D.settings.name)}!<br>ile dróg dzisiaj?</h1>
+    <h1>Hej ${esc(D.settings.name)}!<br>${esc(D.settings.homePrompt || 'Co dzisiaj wpadło?')}</h1>
   </div>
   <div class="overlap">
     <div class="card" onclick="go('map')" style="cursor:pointer">
@@ -486,8 +502,8 @@ function viewHome(){
 const FILTERS = {
   all:['Wszystkie', r => true],
   done:['Zrobione', r => DONE(r.status)],
-  todo:['Do zrobienia', r => !DONE(r.status) && !r.removed],
-  gone:['Niezrobione', r => !DONE(r.status) && r.removed],
+  todo:['Do zrobienia', r => r.status !== 'test' && !DONE(r.status) && !r.removed],
+  gone:['Niezrobione', r => r.status !== 'test' && !DONE(r.status) && r.removed],
 };
 function viewRoutes(){
   const q = S.q.trim().toLowerCase();
@@ -497,10 +513,10 @@ function viewRoutes(){
   const selWall = S.wallF === 'all' ? null : wallOf(S.wallF);
   const secs = selWall ? selWall.sectors.map((s, i) => ({ s, i, n:byStatus.filter(r => r.wallId === selWall.id && r.sector === s).length })).filter(x => x.n) : [];
   if(!secs.some(x => x.s === S.secF)) S.secF = null;
-  const list = sorted(byStatus.filter(r => (S.wallF === 'all' || r.wallId === S.wallF) && (!S.secF || r.sector === S.secF) &&
+  const filtered = sorted(byStatus.filter(r => (S.wallF === 'all' || r.wallId === S.wallF) && (!S.secF || r.sector === S.secF) &&
     (!q || routeTitle(r).toLowerCase().includes(q) || r.grade === q || (r.sector || '').toLowerCase().includes(q)
       || r.comment.toLowerCase().includes(q) || (r.angle && ANGLES[r.angle].toLowerCase().includes(q)))));
-  const groups = D.walls.map(w => ({ w, items:list.filter(r => r.wallId === w.id) })).filter(g => g.items.length);
+  const groups = D.walls.map(w => ({ w, items:filtered.filter(r => r.wallId === w.id).slice(0, 10) })).filter(g => g.items.length);
   const hint = { todo:'Dodaj kolejne podejście albo oznacz, że drogi już nie ma – trafi do niezrobionych.',
     gone:'Drogi zdjęte ze ścianki, których nie zrobiłaś.' }[S.filter];
   return `
@@ -510,15 +526,17 @@ function viewRoutes(){
       ${Object.entries(FILTERS).map(([k,[l,f]]) => `<button class="${S.filter===k?'on':''}" onclick="S.filter='${k}';render()">${l} (${D.routes.filter(f).length})</button>`).join('')}
     </div>
     <div class="row" style="margin-bottom:14px">
+      <button class="mini ${S.wallF==='all'?'mini-p':''}" style="height:46px;padding:0 14px;white-space:nowrap" onclick="S.wallF='all';S.secF=null;render()">Wszystkie</button>
       <div class="field grow">${I.mount}<select onchange="S.wallF=this.value;S.secF=null;render()">
-        <option value="all">Wszystkie ścianki (${byStatus.length})</option>
+        <option value="all" ${S.wallF==='all'?'selected':''}>Wybierz ściankę</option>
         ${walls.map(w => `<option value="${w.id}" ${S.wallF===w.id?'selected':''}>${esc(w.name)} (${byStatus.filter(r => r.wallId === w.id).length})</option>`).join('')}
       </select></div>
-      ${secs.length ? `<div class="field grow"><select onchange="setSecF(+this.value)">
+    </div>
+    ${secs.length ? `<div class="field" style="margin:-4px 0 12px"><select onchange="setSecF(+this.value)">
         <option value="-1">Wszystkie miejsca</option>
         ${secs.map(x => `<option value="${x.i}" ${S.secF===x.s?'selected':''}>${esc(x.s)} (${x.n})</option>`).join('')}
       </select></div>` : ''}
-    </div>
+    <p class="muted" style="margin:-5px 2px 10px">Najnowsze drogi · maks. 10 na ściankę</p>
     <div class="search">${I.search}<input id="q" type="search" placeholder="Szukaj: komentarz, poziom, typ..." value="${esc(S.q)}" oninput="S.q=this.value;refreshList()"></div>
     ${hint ? `<p class="muted" style="margin:-4px 2px 10px">${hint}</p>` : ''}
     <div id="rlist">${groups.length ? groups.map(g => `
@@ -603,14 +621,6 @@ function viewWall(){
           <button onclick="changeBase('${w.id}','${k}',1)" aria-label="więcej">${I.plus}</button></div></div>`).join('')}
       </details>
     </div>
-    <div class="card">
-      <h2>Miejsca na ściance</h2>
-      <div class="chips" style="flex-wrap:wrap">
-        ${w.sectors.map((s, i) => `<button onclick="delSector('${w.id}',${i})">${esc(s)} <span class="muted">✕</span></button>`).join('')}
-        <button onclick="addSector('${w.id}')">${I.plus.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Dodaj miejsce</button>
-      </div>
-      ${w.sectors.length ? '' : '<p class="muted" style="margin-top:8px">Np. Diament, Dach, 30 stopni, Mała sala lewa…</p>'}
-    </div>
     ${rs.length ? `
     <div class="card">
       <h2>Drogi zapisane w aplikacji</h2>
@@ -620,12 +630,6 @@ function viewWall(){
         <div><b>${best || '–'}</b><span class="muted">najtrudniejsza</span></div>
       </div>
       <div style="padding-top:12px;border-top:1px solid var(--line)">${routesKpi(rs)}</div>
-    </div>
-    <div class="card">
-      <h2>Wizyty zapisane w aplikacji</h2>
-      ${t.dates.map(d => { const day = rs.filter(r => routeDates(r).includes(d)); return `
-        <div class="visit"><div class="row between"><b>${fmtFull(d)}</b><span class="muted">${plRoutes(day.length)}</span></div>
-          <div style="margin-top:3px">${statusSummary(day.map(r => statusOn(r, d)))}</div></div>`; }).join('')}
     </div>
     <div class="card">
       <h2>Poziomy – zrobione z próbowanych</h2>
@@ -639,10 +643,31 @@ function viewWall(){
       <h2>Miejsca – zrobione z próbowanych</h2>
       ${w.sectors.filter(s => rs.some(r => r.sector === s)).map(s => progressRow(esc(s), rs.filter(r => r.sector === s), 'var(--green-2)')).join('')}
     </div>` : ''}
+    <div class="card">
+      <h2>Miejsca na ściance</h2>
+      <div class="chips" style="flex-wrap:wrap">
+        ${w.sectors.map((s, i) => `<button onclick="delSector('${w.id}',${i})">${esc(s)} <span class="muted">✕</span></button>`).join('')}
+        <button onclick="addSector('${w.id}')">${I.plus.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Dodaj miejsce</button>
+      </div>
+      ${w.sectors.length ? '' : '<p class="muted" style="margin-top:8px">Np. Diament, Dach, 30 stopni, Mała sala lewa…</p>'}
+    </div>
+    <div class="card">
+      <h2>Wizyty zapisane w aplikacji</h2>
+      ${t.dates.map(d => { const day = rs.filter(r => routeDates(r).includes(d)); return `
+        <div class="visit"><div class="row between"><b>${fmtFull(d)}</b><span class="muted">${plRoutes(day.length)}</span></div>
+          <div style="margin-top:3px">${statusSummary(day.map(r => statusOn(r, d)))}</div></div>`; }).join('')}
+    </div>
     <div class="card group">
       <div class="group-h">Wszystkie drogi (${rs.length})</div>
       ${rs.map(r => routeRow(r)).join('')}
-    </div>` : '<div class="empty">Nie masz jeszcze dróg zapisanych na tej ściance.</div>'}
+    </div>` : `<div class="empty">Nie masz jeszcze dróg zapisanych na tej ściance.</div>
+      <div class="card">
+        <h2>Miejsca na ściance</h2>
+        <div class="chips" style="flex-wrap:wrap">
+          ${w.sectors.map((s, i) => `<button onclick="delSector('${w.id}',${i})">${esc(s)} <span class="muted">✕</span></button>`).join('')}
+          <button onclick="addSector('${w.id}')">${I.plus.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Dodaj miejsce</button>
+        </div>
+      </div>`}
     <button class="btn btn-primary" onclick="openForm(null,{wallId:'${w.id}',date:today()})">${I.plus} Dodaj drogę na tej ściance</button>
   </div>`;
 }
@@ -763,6 +788,7 @@ function openForm(id, prev){
   renderForm();
 }
 function renderForm(){
+  const previousScroll = document.querySelector('.sheet-body')?.scrollTop || 0;
   $ov.innerHTML = `
   <div class="sheet">
     <div class="sheet-body">
@@ -820,12 +846,14 @@ function renderForm(){
       <button class="btn btn-primary" onclick="saveForm()">Zapisz</button>
     </div>
   </div>`;
+  requestAnimationFrame(() => { const body = document.querySelector('.sheet-body'); if(body) body.scrollTop = previousScroll; });
 }
 function setStatus(k){
   F.status = k;
   if(k === 'flash') F.attempts = 1;
   renderForm();
 }
+function toggleGradeStatus(status){ S.gradeStatus = S.gradeStatus === status ? null : status; render(); }
 function closeForm(){ F = null; $ov.innerHTML = ''; }
 async function saveForm(next){
   if(!F.grade){ toast('Wybierz poziom trudności'); return; }
@@ -938,13 +966,12 @@ function closeMonth(){ S.monthEdit = null; $ov.innerHTML = ''; render(); }
 
 /* STATYSTYKI */
 function viewStats(){
-  const months = [...new Set(D.routes.map(r => statDate(r).slice(0, 7)))].sort();
-  if(S.period !== 'all' && !months.includes(S.period)) S.period = 'all';
+  if(S.period !== 'all' && !/^\d{4}-\d{2}$/.test(S.period)) S.period = 'all';
   const inP = D.routes.filter(r => S.period === 'all' || statDate(r).startsWith(S.period));
-  const done = inP.filter(r => DONE(r.status));
-  const cnt = s => inP.filter(r => r.status === s).length;
+  const done = inP.filter(r => S.gradeStatus ? r.status === S.gradeStatus : DONE(r.status));
   const curY = String(new Date().getFullYear());
-  const monthLabel = ym => MONTHS[+ym.slice(5) - 1] + (ym.startsWith(curY) ? '' : ' ’' + ym.slice(2, 4));
+  const years = [...new Set([curY, ...D.routes.map(r => statDate(r).slice(0, 4)), ...Object.keys(D.months).map(ym => ym.slice(0, 4))])].sort();
+  if(!years.includes(S.periodYear)) S.periodYear = curY;
   const byGrade = {};
   done.forEach(r => byGrade[r.grade] = (byGrade[r.grade] || 0) + 1);
   const grades = GRADES.filter(g => byGrade[g]);
@@ -967,13 +994,14 @@ function viewStats(){
   <div class="page slide">
     <h1>Statystyki</h1>
     <h2 style="margin:0 2px 10px">Drogi zapisane w aplikacji</h2>
+    ${years.length > 1 ? `<div class="pills" style="margin:0 0 8px">${years.map(y => `<button class="${S.periodYear===y?'on':''}" onclick="S.periodYear='${y}';S.period='all';render()">${y}</button>`).join('')}</div>` : ''}
     <div class="mgrid">
       <button class="${S.period==='all'?'on':''}" onclick="S.period='all';render()">Wszystko</button>
-      ${months.map(m => `<button class="${S.period===m?'on':''}" onclick="S.period='${m}';render()">${monthLabel(m)}</button>`).join('')}
+      ${MONTHS.map((m, i) => { const ym = `${S.periodYear}-${String(i + 1).padStart(2, '0')}`; return `<button class="${S.period===ym?'on':''}" onclick="S.period='${ym}';render()">${m}</button>`; }).join('')}
     </div>
-    <div class="card">${routesKpi(inP)}</div>
+    <div class="card">${routesKpi(inP, false, true)}</div>
     <div class="card">
-      <h2>Rozkład poziomów</h2>
+      <h2>Rozkład poziomów${S.gradeStatus ? ` – ${STATUSES[S.gradeStatus].label}` : ''}</h2>
       ${grades.length ? grades.map(g => `
         <div class="bar"><span class="t">${g}</span><div class="track"><div class="fill" style="width:${byGrade[g]/maxG*100}%;background:${gradeColor(g)}"></div></div><span class="n">${byGrade[g]}</span></div>`).join('')
         : '<div class="empty">Brak zrobionych dróg w tym okresie</div>'}
@@ -1028,6 +1056,8 @@ function viewProfile(){
     <div class="card">
       <label class="lbl" style="margin-top:0">Imię</label>
       <div class="field"><input value="${esc(D.settings.name)}" onchange="setName(this.value)" placeholder="Twoje imię"></div>
+      <label class="lbl">Tekst na ekranie startowym</label>
+      <div class="field"><input maxlength="50" value="${esc(D.settings.homePrompt || 'Co dzisiaj wpadło?')}" onchange="setHomePrompt(this.value)" placeholder="Co dzisiaj wpadło?"></div>
     </div>
     <div class="card">
       <h2>Ścianki</h2>
@@ -1051,6 +1081,7 @@ function viewProfile(){
   </div>`;
 }
 async function setName(v){ D.settings.name = v.trim() || 'Wspinaczu'; await save(); toast('Zapisano'); }
+async function setHomePrompt(v){ D.settings.homePrompt = v.trim() || 'Co dzisiaj wpadło?'; await save(); toast('Zapisano'); }
 async function addWall(){
   const n = document.getElementById('wName').value.trim();
   const c = document.getElementById('wCity').value.trim();
@@ -1090,7 +1121,8 @@ async function importData(file){
     if(!d.walls.every(okWall) || !d.routes.every(r => okRoute(r) && /^[a-z0-9]+$/i.test(r.id))) throw new Error('dane');
     if(!confirm('Zastąpić obecne dane danymi z pliku?')) return;
     D = { walls:d.walls.map(normalizeWall), routes:d.routes, months:normalizeMonths(d.months), visits:normalizeVisits(d.visits),
-          settings:{ name:String((d.settings || {}).name || D.settings.name) } };
+          settings:{ name:String((d.settings || {}).name || D.settings.name), homePrompt:String((d.settings || {}).homePrompt || 'Co dzisiaj wpadło?') } };
+    ensureDefaultWalls();
     await save(); render(); toast('Zaimportowano');
   } catch(e){ toast('Nieprawidłowy plik'); }
 }
