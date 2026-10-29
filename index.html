@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Moje drogi">
+<meta name="theme-color" content="#1d5c45">
+<title>Moje drogi</title>
+<link id="appleIcon" rel="apple-touch-icon">
+<link id="manifestLink" rel="manifest">
+<style>
+:root{
+  --green:#1d5c45;--green-2:#2f7a5d;--green-l:#e6f2ec;--bg:#f4f5f3;--card:#fff;--text:#1b1f1d;--muted:#7a817d;
+  --line:#eceeec;--orange:#f08a24;--red:#e5484d;--radius:16px;
+  --st:env(safe-area-inset-top);--sb:env(safe-area-inset-bottom);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;font-size:15px;overscroll-behavior:none}
+button{font:inherit;border:0;background:none;color:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+html{background:#e9ebe9}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;max-width:480px;margin:0 auto;background:var(--bg);box-shadow:0 0 0 1px var(--line)}
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+.page{padding:calc(var(--st) + 12px) 16px 0}
+h1{font-size:24px;font-weight:700;display:flex;align-items:center;gap:10px;margin-bottom:14px}
+h2{font-size:16px;font-weight:700;margin-bottom:12px}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.muted{color:var(--muted);font-size:12px}
+.row{display:flex;align-items:center;gap:10px}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* tab bar */
+#tabbar{display:flex;background:#fff;border-top:1px solid var(--line);padding:6px 4px calc(var(--sb) + 6px)}
+#tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:#8b928e;padding:4px 0}
+#tabbar button.on{color:var(--green);font-weight:600}
+#tabbar svg{width:23px;height:23px}
+
+/* hero */
+.hero{position:relative;min-height:calc(300px + var(--st));padding:calc(var(--st) + 14px) 20px 60px;color:#fff;
+  background:
+   radial-gradient(circle at 12% 18%,#f5c400 0 5px,transparent 6px),radial-gradient(circle at 30% 40%,#e5484d 0 6px,transparent 7px),
+   radial-gradient(circle at 72% 22%,#1e88e5 0 5px,transparent 6px),radial-gradient(circle at 85% 55%,#22a06b 0 7px,transparent 8px),
+   radial-gradient(circle at 55% 65%,#8e4ec6 0 5px,transparent 6px),radial-gradient(circle at 20% 75%,#f08a24 0 6px,transparent 7px),
+   radial-gradient(circle at 45% 12%,#f0587a 0 4px,transparent 5px),radial-gradient(circle at 92% 85%,#f5c400 0 5px,transparent 6px),
+   linear-gradient(160deg,#5b5f63,#2c2f31 60%,#1a1c1d)}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.35),rgba(0,0,0,.1) 50%,rgba(0,0,0,.45))}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:30px;line-height:1.15;margin:28px 0 0;display:block}
+.hero .top{display:flex;justify-content:flex-end}
+.hero .top button{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.18);display:grid;place-items:center;backdrop-filter:blur(8px)}
+.overlap{margin-top:-40px;position:relative;z-index:2;padding:0 16px}
+.stats3{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.stats3 b{display:block;font-size:26px;font-weight:700}
+.stats3>div+div{border-left:1px solid var(--line)}
+.act{display:flex;align-items:center;gap:10px;padding:11px 0;border-top:1px solid var(--line);font-size:13px}
+.act:first-of-type{border-top:0}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);background:transparent}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:25px;font-weight:600;font-size:16px}
+.btn-primary{background:var(--green);color:#fff}
+.btn-outline{border:1.5px solid #cfd5d2;background:#fff}
+.btn-danger{width:50px;flex-shrink:0;border:1.5px solid #f5c6c7;color:var(--red);background:#fff}
+
+/* segmented */
+.seg{display:flex;background:#eceeec;border-radius:12px;padding:3px;margin-bottom:12px}
+.seg button{flex:1;padding:8px 2px;border-radius:10px;font-size:12px;color:#555}
+.seg button.on{background:#fff;color:var(--green);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.pills{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto}
+.pills button{padding:8px 14px;border-radius:20px;font-size:13px;white-space:nowrap;color:#444}
+.pills button.on{background:var(--green);color:#fff;font-weight:600}
+.mgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px}
+.mgrid button{padding:8px 0;border-radius:10px;font-size:13px;background:#fff;color:#444}
+.mgrid button.on{background:var(--green);color:#fff;font-weight:600}
+.mgrid button:first-child{grid-column:span 2}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:14px;color:var(--muted)}
+.search input{border:0;outline:0;flex:1;background:none;color:var(--text);font-size:16px}
+
+/* list */
+.group{padding:0;overflow:hidden}
+.group-h{display:flex;align-items:center;gap:8px;padding:12px 14px;font-weight:700;font-size:14px;border-bottom:1px solid var(--line)}
+.group-h .ic{width:20px;height:20px;border-radius:6px;background:var(--green);color:#fff;display:grid;place-items:center}
+.group-h .ic svg{width:12px;height:12px}
+.group-h .chev svg{width:16px;height:16px;color:var(--muted);display:block}
+.rt{display:flex;align-items:center;gap:10px;padding:10px 14px;border-top:1px solid var(--line);font-size:13px;width:100%;text-align:left;cursor:pointer}
+.rt:first-of-type{border-top:0}
+.rt .sub{color:var(--muted);font-size:12px;margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rt .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0}
+.acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.mini{font-size:12px;padding:5px 10px;border-radius:14px;border:1px solid #dfe3e1;background:#fff;display:inline-flex;align-items:center;gap:4px}
+.mini svg{width:12px;height:12px}
+.mini-p{background:var(--green);color:#fff;border-color:var(--green)}
+.tag{font-size:11px;padding:2px 7px;border-radius:8px;background:#eef0ef;color:#555}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);text-align:center}
+.stats4 b{display:block;font-size:24px;font-weight:700}
+.stats4>div+div{border-left:1px solid var(--line)}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--muted);margin-top:4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.visit{padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+.visit:first-of-type{border-top:0}
+.hist{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.hist:first-of-type{border-top:0}
+.grade{display:inline-grid;place-items:center;min-width:26px;height:24px;padding:0 5px;border-radius:7px;background:#eef0ef;color:#333;font-weight:700;font-size:12px}
+.link{color:var(--green);font-weight:600;cursor:pointer}
+.st{display:flex;align-items:center;gap:4px;font-size:12px;justify-content:flex-end}
+.st svg{width:14px;height:14px}
+.st-top{color:var(--green-2)}.st-flash{color:var(--orange)}.st-zona{color:#3e63dd}.st-nope{color:var(--red)}.st-test{color:#555}
+.empty{text-align:center;color:var(--muted);padding:30px 10px}
+
+/* form / sheet */
+.sheet{position:fixed;inset:0;max-width:480px;margin:0 auto;background:var(--bg);z-index:50;display:flex;flex-direction:column;animation:up .25s ease}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.slide{animation:slide .22s ease}
+@keyframes slide{from{transform:translateX(30%);opacity:.4}to{transform:none;opacity:1}}
+.sheet-body{flex:1;overflow-y:auto;padding:calc(var(--st) + 10px) 16px 20px}
+.sheet-foot{padding:10px 16px calc(var(--sb) + 10px);background:var(--bg)}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;border-radius:50%}
+.lbl{display:block;font-size:13px;font-weight:600;margin:16px 0 8px}
+.field{display:flex;align-items:center;gap:8px;width:100%;background:#fff;border:1px solid #dfe3e1;border-radius:12px;padding:0 12px;height:46px}
+.field input,.field select{flex:1;border:0;outline:0;background:none;height:100%;font-size:16px;-webkit-appearance:none;appearance:none;min-width:0}
+textarea.field{height:80px;padding:12px;resize:none;outline:0;font-size:16px;display:block}
+.photo-main{height:150px;border-radius:14px;overflow:hidden;position:relative;background:linear-gradient(160deg,#6b6f73,#2c2f31);display:grid;place-items:center;color:#fff}
+.photo-main img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.photo-main label{position:absolute;right:10px;bottom:10px;width:40px;height:40px;border-radius:12px;background:rgba(0,0,0,.45);display:grid;place-items:center;cursor:pointer}
+.thumbs{display:flex;gap:8px;margin-top:8px;overflow-x:auto}
+.thumb{position:relative;width:60px;height:60px;border-radius:10px;overflow:hidden;flex-shrink:0}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center}
+.thumb button svg{width:12px;height:12px}
+.colors{display:flex;gap:12px;flex-wrap:wrap}
+.colors button{width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12)}
+.colors button.on{outline:2.5px solid var(--green);outline-offset:2px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+.chips button{flex-shrink:0;min-width:40px;padding:9px 10px;border-radius:10px;background:#fff;border:1px solid #dfe3e1;font-size:13px}
+.chips button.on{background:var(--green);color:#fff;border-color:var(--green);font-weight:600}
+.chips.grades button{flex:1;min-width:0;padding:10px 0;font-weight:600}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid #dfe3e1;display:grid;place-items:center}
+.stepper span{width:50px;text-align:center;font-weight:600;font-size:16px}
+
+/* detail */
+.dhero{height:calc(320px + var(--st));position:relative;background:linear-gradient(160deg,#6b6f73,#2c2f31)}
+.dhero img{width:100%;height:100%;object-fit:cover}
+.dhero .iconbtn{position:absolute;top:calc(var(--st) + 10px);background:rgba(0,0,0,.4);color:#fff}
+.dcard{background:#fff;border-radius:22px 22px 0 0;margin-top:-24px;position:relative;padding:20px 16px;min-height:50vh}
+.bigGrade{width:52px;height:52px;border-radius:14px;color:#fff;font-weight:800;font-size:18px;display:grid;place-items:center}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:16px;font-size:13px;font-weight:600}
+.badge svg{width:14px;height:14px}
+.meta{display:flex;align-items:center;gap:14px;margin:18px 0;font-size:13px;flex-wrap:wrap}
+.meta>span+span{border-left:1px solid var(--line);padding-left:14px}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gallery img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px}
+.viewer{position:fixed;inset:0;background:#000;z-index:80;display:grid;place-items:center}
+.viewer img{max-width:100%;max-height:100%}
+
+/* stats */
+.kpi{display:grid;grid-template-columns:repeat(3,1fr);text-align:center;gap:6px}
+.kpi2{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.kpi svg{width:26px;height:26px;margin-bottom:6px}
+.kpi b{display:block;font-size:22px}
+.kc{grid-template-columns:repeat(5,1fr);gap:2px;align-items:start}
+.kc6{grid-template-columns:repeat(6,1fr)}
+.kc4{grid-template-columns:repeat(4,1fr)}
+.kc3{grid-template-columns:repeat(3,1fr)}
+.kc>div{padding:6px 0;border-radius:10px}
+.kc svg{width:18px;height:18px;margin-bottom:2px}
+.kc b{font-size:18px;line-height:1.2}
+.kc .muted{font-size:11px;display:block;line-height:1.2}
+.kc .sum{background:var(--green-l)}
+.wrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line);cursor:pointer}
+.wrow:first-of-type{border-top:0}
+.rank{width:24px;height:24px;border-radius:50%;background:var(--green-l);color:var(--green);font-weight:700;font-size:12px;display:grid;place-items:center;flex-shrink:0}
+.rank.r1{background:var(--green);color:#fff}
+.wrow .track{height:6px;background:#eef0ef;border-radius:3px;overflow:hidden;margin:6px 0 5px}
+.wrow .fill{height:100%;background:var(--green-2);border-radius:3px}
+.wrow .chev svg{width:16px;height:16px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13px}
+.bar .t{width:34px;font-weight:600}
+.bar .track{flex:1;height:9px;background:#eef0ef;border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;border-radius:5px}
+.bar .n{width:22px;text-align:right;font-weight:600}
+.chart svg{width:100%;height:auto;stroke-width:1}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(var(--sb) + 90px);transform:translateX(-50%);background:#1b1f1d;color:#fff;padding:10px 18px;border-radius:20px;font-size:14px;z-index:100;opacity:0;transition:opacity .2s;pointer-events:none}
+#toast.show{opacity:1}
+.list-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.list-item:first-of-type{border-top:0}
+</style>
+</head>
+<body>
+<div id="app">
+  <main id="main"></main>
+  <nav id="tabbar"></nav>
+</div>
+<div id="overlay"></div>
+<div id="toast"></div>
+
+<script>
+'use strict';
+/* ---------- ikony ---------- */
+const I = {
+  home:'<svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
+  route:'<svg viewBox="0 0 24 24"><path d="M5 21V4h11l-2 4 2 4H5"/></svg>',
+  chart:'<svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>',
+  map:'<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>',
+  user:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>',
+  plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+  minus:'<svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>',
+  back:'<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>',
+  x:'<svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>',
+  camera:'<svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="4"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v6M14 11v6"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
+  flame:'<svg viewBox="0 0 24 24"><path d="M12 22c4 0 7-3 7-7 0-5-5-7-5-12-3 2-5 5-5 8-1-1-2-2-2-3-1 2-2 4-2 7 0 4 3 7 7 7z"/></svg>',
+  bolt:'<svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>',
+  star:'<svg viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z"/></svg>',
+  retry:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>',
+  clock:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  zone:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>',
+  sum:'<svg viewBox="0 0 24 24"><path d="M18 4H6l6 8-6 8h12"/></svg>',
+  search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
+  heart:'<svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l8.8 8.8 8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>',
+  mount:'<svg viewBox="0 0 24 24"><path d="M3 20 10 8l4 6 2-3 5 9z"/></svg>',
+  diamond:'<svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M2 9h20"/></svg>',
+  pin:'<svg viewBox="0 0 24 24"><path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  download:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"/></svg>',
+  upload:'<svg viewBox="0 0 24 24"><path d="M12 21V9M7 14l5-5 5 5M4 3h16"/></svg>',
+};
+
+/* ---------- stałe ---------- */
+const GRADES = ['1','2','3','4','5','6','7','8','9'];
+const GRADE_COLORS = ['#f5b82e','#f08a24','#22a06b','#1e88e5','#f0587a','#d6409f','#e5484d','#8e4ec6','#1b1f1d'];
+const OLD_GRADE = [['4','1'],['5A','2'],['5B','3'],['5C','4'],['6A','5'],['6B','6'],['6C','7'],['7','8'],['8','9']];
+const ZEBRA = 'repeating-linear-gradient(45deg,#111 0 3px,#fff 3px 6px)';
+const HOLD_COLORS = ['#f5c400','#1e88e5','#22a06b','#e5484d','#8e4ec6','#6b7280','#f08a24','#f0587a','#111111','#ffffff','#b7834f','#7fd8c3','#ff7f6b','#7cc7f0','#1f3a93','#b5e61d',ZEBRA];
+const STATUSES = {
+  flash:{label:'Flash',cls:'st-flash',icon:I.bolt,bg:'#fde8d7',fg:'#c25f0c'},
+  top:{label:'Top',cls:'st-top',icon:I.check,bg:'#e6f2ec',fg:'#1d5c45'},
+  zona:{label:'Zona',cls:'st-zona',icon:I.star,bg:'#e6ecfb',fg:'#2f4fb8'},
+  nope:{label:'Nope',cls:'st-nope',icon:I.x,bg:'#fde4e5',fg:'#b4292e'},
+  test:{label:'Test',cls:'st-test',icon:I.search,bg:'#eef0ef',fg:'#555'},
+};
+const OLD_STATUS = { zrobiona:'top', proby:'top', nieuk:'nope' };
+const ANGLES = { slab:'Slab', pion:'Pion', przewieszenie:'Przewieszenie', mix:'Mix' };
+const DONE = s => s === 'flash' || s === 'top';
+// kolejny numer drogi danego dnia (wg kolejności dodania)
+const dayOrdinal = r => D.routes.filter(x => x.date === r.date && x.createdAt <= r.createdAt).length;
+const routeTitle = r => `Droga #${dayOrdinal(r)}` + (r.name ? ` · ${r.name}` : '');
+function normalizeRoute(r){
+  const g = String(r.grade || '');
+  return { ...r, status:OLD_STATUS[r.status] || r.status, name:String(r.name || ''),
+    grade:GRADES.includes(g) ? g : ((OLD_GRADE.find(([p]) => g.startsWith(p)) || [,null])[1]),
+    createdAt:+r.createdAt || 0, angle:ANGLES[r.angle] ? r.angle : null,
+    attempts:Math.max(1, parseInt(r.attempts) || 1), comment:String(r.comment || ''),
+    removed:!!r.removed, doneDate:isDate(r.doneDate) ? r.doneDate : null,
+    sector:typeof r.sector === 'string' && r.sector.trim() ? r.sector.trim().slice(0, 40) : null,
+    history:(Array.isArray(r.history) ? r.history : []).filter(h => h && isDate(h.date) && STATUSES[h.status])
+      .map(h => ({ date:h.date, status:h.status, attempts:Math.max(1, parseInt(h.attempts) || 1), note:String(h.note || '') })) };
+}
+const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const RANK = { test:0, nope:1, zona:2, top:3, flash:4 };
+const BASE_KEYS = [['visits','Wizyty'],['fives','Piąteczki'],['sixes','Szósteczki'],['comps','Zawody']];
+function normalizeWall(w){
+  const b = w.base || {};
+  return { id:w.id, name:String(w.name), city:String(w.city || ''),
+    base:Object.fromEntries(BASE_KEYS.map(([k]) => [k, Math.max(0, parseInt(b[k]) || 0)])),
+    sectors:[...new Set((Array.isArray(w.sectors) ? w.sectors : []).filter(s => typeof s === 'string' && s.trim()).map(s => s.trim().slice(0, 40)))] };
+}
+const routeDates = r => [r.date, ...r.history.map(h => h.date)];
+const doneDate = r => r.doneDate || r.date;
+// data, pod którą droga liczy się w statystykach okresu
+const statDate = r => DONE(r.status) ? doneDate(r) : routeDates(r).sort().pop();
+const statusOn = (r, d) => { const h = r.history.filter(x => x.date === d).pop(); return h ? h.status : r.status; };
+function wallTotals(w){
+  const rs = D.routes.filter(r => r.wallId === w.id);
+  const dates = [...new Set([...rs.flatMap(routeDates), ...D.visits.filter(v => v.wallId === w.id).map(v => v.date)])].sort().reverse();
+  const doneG = g => rs.filter(r => DONE(r.status) && r.grade === g).length;
+  return { visits:w.base.visits + dates.length, fives:w.base.fives + doneG('5'), sixes:w.base.sixes + doneG('6'),
+    comps:w.base.comps, dates, rs };
+}
+const MONTH_KEYS = [['visits','Wizyty'],['fives','Piąteczki'],['sixes','Szósteczki'],['newWalls','Nowe ścianki'],['comps','Zawody']];
+function normalizeMonths(m){
+  const out = {};
+  Object.entries(m && typeof m === 'object' ? m : {}).forEach(([ym, v]) => {
+    if(/^\d{4}-\d{2}$/.test(ym) && v) out[ym] = Object.fromEntries(MONTH_KEYS.map(([k]) => [k, Math.max(0, parseInt(v[k]) || 0)]));
+  });
+  return out;
+}
+// dane sprzed aplikacji + to, co wynika z zapisanych dróg
+function monthTotals(ym){
+  const b = D.months[ym] || {};
+  const visits = new Set([...D.routes.flatMap(r => routeDates(r).map(d => r.wallId + '|' + d)), ...D.visits.map(v => v.wallId + '|' + v.date)]
+    .filter(k => k.split('|')[1].startsWith(ym))).size;
+  const doneG = g => D.routes.filter(r => DONE(r.status) && r.grade === g && doneDate(r).startsWith(ym)).length;
+  return { visits:(b.visits || 0) + visits, fives:(b.fives || 0) + doneG('5'), sixes:(b.sixes || 0) + doneG('6'),
+    newWalls:b.newWalls || 0, comps:b.comps || 0 };
+}
+// wizyty bez zapisanych dróg
+function normalizeVisits(v){
+  return (Array.isArray(v) ? v : []).filter(x => x && typeof x.wallId === 'string' && isDate(x.date)).map(x => ({ wallId:x.wallId, date:x.date }));
+}
+function plRoutes(n){ return pl(n, 'droga', 'drogi', 'dróg'); }
+function pl(n, one, few, many){
+  if(n === 1) return `1 ${one}`;
+  const l = n % 10, h = n % 100;
+  return `${n} ${(l >= 2 && l <= 4 && (h < 12 || h > 14)) ? few : many}`;
+}
+const kcell = (icon, color, n, label, extra = '') => `<div ${extra}><span style="color:${color};display:block">${icon}</span><b>${n}</b><span class="muted">${label}</span></div>`;
+// rząd 1: statusy, rząd 2: zrobione / do zrobienia / niezrobione
+function routesKpi(list, links){
+  const c = s => list.filter(r => r.status === s).length;
+  const link = f => links ? `onclick="S.filter='${f}';go('routes')" style="cursor:pointer"` : '';
+  return `
+    <div class="kpi kc kc4">
+      ${kcell(I.bolt, 'var(--orange)', c('flash'), 'flash')}
+      ${kcell(I.check, 'var(--green-2)', c('top'), 'top')}
+      ${kcell(I.star, '#3e63dd', c('zona'), 'zona')}
+      ${kcell(I.x, 'var(--red)', c('nope'), 'nope')}
+    </div>
+    <div class="kpi kc kc3" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--line)">
+      ${kcell(I.mount, 'var(--green)', list.filter(r => DONE(r.status)).length, 'zrobione', 'class="sum"')}
+      ${kcell(I.retry, '#3e63dd', list.filter(r => !DONE(r.status) && !r.removed).length, 'do zrobienia' + (links ? ' ›' : ''), link('todo'))}
+      ${kcell(I.x, 'var(--muted)', list.filter(r => !DONE(r.status) && r.removed).length, 'niezrobione' + (links ? ' ›' : ''), link('gone'))}
+    </div>`;
+}
+function statusSummary(list){
+  return Object.entries(STATUSES).map(([k,s]) => [s, list.filter(x => x === k).length]).filter(([,n]) => n)
+    .map(([s,n]) => `<span class="${s.cls}">${n} ${s.label.toLowerCase()}</span>`).join(' · ');
+}
+const MONTHS = ['Sty','Lut','Mar','Kwi','Maj','Cze','Lip','Sie','Wrz','Paź','Lis','Gru'];
+const MONTHS_FULL = ['Styczeń','Luty','Marzec','Kwiecień','Maj','Czerwiec','Lipiec','Sierpień','Wrzesień','Październik','Listopad','Grudzień'];
+
+const gradeColor = g => GRADE_COLORS[GRADES.indexOf(g)] || '#999';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const fmtShort = iso => { const [y,m,d] = iso.split('-'); return `${d}.${m}`; };
+const fmtFull = iso => { const [y,m,d] = iso.split('-'); return `${d}.${m}.${y}`; };
+const parseDate = iso => new Date(iso + 'T12:00:00');
+function plTries(n){
+  if(n === 1) return '1 próba';
+  const l = n % 10, h = n % 100;
+  return `${n} ${(l >= 2 && l <= 4 && (h < 12 || h > 14)) ? 'próby' : 'prób'}`;
+}
+
+/* ---------- IndexedDB ---------- */
+const DB = {
+  db:null,
+  open(){
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('climbing-pwa', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => { this.db = r.result; res(); };
+      r.onerror = () => rej(r.error);
+    });
+  },
+  get(k){
+    return new Promise((res, rej) => {
+      const r = this.db.transaction('kv').objectStore('kv').get(k);
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+    });
+  },
+  set(k, v){
+    return new Promise((res, rej) => {
+      const t = this.db.transaction('kv', 'readwrite');
+      t.objectStore('kv').put(v, k);
+      t.oncomplete = res; t.onerror = () => rej(t.error);
+    });
+  }
+};
+
+/* ---------- stan ---------- */
+let D = { walls:[], routes:[], months:{}, visits:[], settings:{ name:'Wspinaczu' } };
+let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, detail:null, wall:null };
+let F = null; // stan formularza
+
+async function save(){
+  try { await DB.set('data', D); }
+  catch(e){ toast('Błąd zapisu – za mało miejsca?'); console.error(e); }
+}
+
+async function init(){
+  await DB.open();
+  const saved = await DB.get('data');
+  if(saved){ D = Object.assign(D, saved); D.routes = D.routes.map(normalizeRoute); D.walls = D.walls.map(normalizeWall); D.months = normalizeMonths(D.months); D.visits = normalizeVisits(D.visits); }
+  else {
+    D.walls = [
+      { id:uid(), name:'Boulderownia Wrocław', city:'Wrocław' },
+      { id:uid(), name:'Strefa Wspinaczkowa', city:'Warszawa' },
+      { id:uid(), name:'Skarpa Bytom', city:'Bytom' },
+    ].map(normalizeWall);
+    await save();
+  }
+  setupPwa();
+  render();
+}
+
+/* ---------- render ---------- */
+const $main = document.getElementById('main');
+const $tab = document.getElementById('tabbar');
+const $ov = document.getElementById('overlay');
+
+function render(){
+  if(S.detail){ $tab.style.display = 'none'; $main.innerHTML = viewDetail(); return; }
+  if(S.wall){ $tab.style.display = 'none'; $main.innerHTML = viewWall(); return; }
+  $tab.style.display = '';
+  const v = { home:viewHome, routes:viewRoutes, stats:viewStats, map:viewMap, profile:viewProfile }[S.tab];
+  $main.innerHTML = v();
+  const tabs = [['home','Start',I.home],['routes','Drogi',I.route],['stats','Statystyki',I.chart],['map','Ścianki',I.pin],['profile','Profil',I.user]];
+  $tab.innerHTML = tabs.map(([k,l,i]) => `<button class="${S.tab===k?'on':''}" onclick="go('${k}')">${i}<span>${l}</span></button>`).join('');
+}
+function go(tab){ S.tab = tab; S.detail = null; S.wall = null; render(); $main.scrollTop = 0; }
+function openWall(id){ S.wall = id; S.detail = null; render(); $main.scrollTop = 0; }
+
+const wallName = id => (D.walls.find(w => w.id === id) || {}).name || 'Nieznana ścianka';
+const wallOf = id => D.walls.find(w => w.id === id);
+function setSecF(i){ S.secF = i < 0 ? null : wallOf(S.wallF).sectors[i]; render(); }
+function pickSector(i){ const s = wallOf(F.wallId).sectors[i]; F.sector = F.sector === s ? null : s; renderForm(); }
+async function addSector(wallId, forForm){
+  const n = (prompt('Nazwa miejsca, np. Diament, Dach, 30 stopni') || '').trim().slice(0, 40);
+  if(!n) return;
+  const w = wallOf(wallId);
+  if(!w.sectors.includes(n)) w.sectors.push(n);
+  await save();
+  if(forForm && F){ F.sector = n; renderForm(); } else render();
+}
+async function delSector(wallId, i){
+  const w = wallOf(wallId), n = w.sectors[i];
+  const used = D.routes.filter(r => r.wallId === wallId && r.sector === n).length;
+  if(!confirm(used ? `Usunąć miejsce „${n}”? ${plRoutes(used)} straci to miejsce.` : `Usunąć miejsce „${n}”?`)) return;
+  w.sectors.splice(i, 1);
+  D.routes.forEach(r => { if(r.wallId === wallId && r.sector === n) r.sector = null; });
+  await save(); render();
+}
+const sorted = arr => [...arr].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
+
+function statusInline(r){
+  const s = STATUSES[r.status];
+  const extra = r.status !== 'flash' && r.attempts > 1 ? ` <span class="muted">· ${r.attempts}</span>` : '';
+  return `<span class="st ${s.cls}">${s.label} ${s.icon}${extra}</span>`;
+}
+const gradeBadge = g => `<span class="grade">${esc(g || '–')}</span>`;
+
+/* START */
+function viewHome(){
+  const tot = { visits:0, fives:0, sixes:0, comps:0 };
+  D.walls.forEach(w => { const t = wallTotals(w); BASE_KEYS.forEach(([k]) => tot[k] += t[k]); });
+  const lastDate = [...D.routes.flatMap(routeDates), ...D.visits.map(v => v.date)].sort().pop();
+  const lastVisits = lastDate ? D.walls.map(w => ({ w, rs:D.routes.filter(r => r.wallId === w.id && routeDates(r).includes(lastDate)),
+    extra:D.visits.some(v => v.wallId === w.id && v.date === lastDate) })).filter(x => x.rs.length || x.extra) : [];
+  return `
+  <div class="hero">
+    <div class="top"><button onclick="go('profile')" aria-label="Ustawienia">${I.gear}</button></div>
+    <h1>Hej ${esc(D.settings.name)}!<br>ile dróg dzisiaj?</h1>
+  </div>
+  <div class="overlap">
+    <div class="card" onclick="go('map')" style="cursor:pointer">
+      <h2>Podsumowanie</h2>
+      <div class="stats4">
+        ${BASE_KEYS.map(([k,l]) => `<div><b>${tot[k]}</b><span class="muted">${l}</span></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:8px">Drogi</h2>
+      ${routesKpi(D.routes, true)}
+    </div>
+    ${lastVisits.map(({ w, rs }) => `
+    <div class="card" onclick="openWall('${w.id}')" style="cursor:pointer">
+      <div class="row between"><h2 style="margin:0">Ostatnia wizyta</h2><span class="muted">${fmtFull(lastDate)}</span></div>
+      <div style="font-size:17px;font-weight:700;margin:8px 0 4px">${esc(w.name)} ›</div>
+      <div class="muted">${rs.length ? `${plRoutes(rs.length)}: ${statusSummary(rs.map(r => statusOn(r, lastDate)))}` : 'bez zapisanych dróg'}</div>
+    </div>`).join('')}
+    <button class="btn btn-primary" onclick="openForm()">${I.plus} Dodaj nową drogę</button>
+  </div>`;
+}
+
+/* DROGI */
+const FILTERS = {
+  all:['Wszystkie', r => true],
+  done:['Zrobione', r => DONE(r.status)],
+  todo:['Do zrobienia', r => !DONE(r.status) && !r.removed],
+  gone:['Niezrobione', r => !DONE(r.status) && r.removed],
+};
+function viewRoutes(){
+  const q = S.q.trim().toLowerCase();
+  const byStatus = D.routes.filter(FILTERS[S.filter][1]);
+  const walls = D.walls.filter(w => byStatus.some(r => r.wallId === w.id));
+  if(S.wallF !== 'all' && !D.walls.some(w => w.id === S.wallF)) S.wallF = 'all';
+  const selWall = S.wallF === 'all' ? null : wallOf(S.wallF);
+  const secs = selWall ? selWall.sectors.map((s, i) => ({ s, i, n:byStatus.filter(r => r.wallId === selWall.id && r.sector === s).length })).filter(x => x.n) : [];
+  if(!secs.some(x => x.s === S.secF)) S.secF = null;
+  const list = sorted(byStatus.filter(r => (S.wallF === 'all' || r.wallId === S.wallF) && (!S.secF || r.sector === S.secF) &&
+    (!q || routeTitle(r).toLowerCase().includes(q) || r.grade === q || (r.sector || '').toLowerCase().includes(q)
+      || r.comment.toLowerCase().includes(q) || (r.angle && ANGLES[r.angle].toLowerCase().includes(q)))));
+  const groups = D.walls.map(w => ({ w, items:list.filter(r => r.wallId === w.id) })).filter(g => g.items.length);
+  const hint = { todo:'Dodaj kolejne podejście albo oznacz, że drogi już nie ma – trafi do niezrobionych.',
+    gone:'Drogi zdjęte ze ścianki, których nie zrobiłaś.' }[S.filter];
+  return `
+  <div class="page slide">
+    <h1>Moje drogi</h1>
+    <div class="seg">
+      ${Object.entries(FILTERS).map(([k,[l,f]]) => `<button class="${S.filter===k?'on':''}" onclick="S.filter='${k}';render()">${l} (${D.routes.filter(f).length})</button>`).join('')}
+    </div>
+    <div class="row" style="margin-bottom:14px">
+      <div class="field grow">${I.mount}<select onchange="S.wallF=this.value;S.secF=null;render()">
+        <option value="all">Wszystkie ścianki (${byStatus.length})</option>
+        ${walls.map(w => `<option value="${w.id}" ${S.wallF===w.id?'selected':''}>${esc(w.name)} (${byStatus.filter(r => r.wallId === w.id).length})</option>`).join('')}
+      </select></div>
+      ${secs.length ? `<div class="field grow"><select onchange="setSecF(+this.value)">
+        <option value="-1">Wszystkie miejsca</option>
+        ${secs.map(x => `<option value="${x.i}" ${S.secF===x.s?'selected':''}>${esc(x.s)} (${x.n})</option>`).join('')}
+      </select></div>` : ''}
+    </div>
+    <div class="search">${I.search}<input id="q" type="search" placeholder="Szukaj: komentarz, poziom, typ..." value="${esc(S.q)}" oninput="S.q=this.value;refreshList()"></div>
+    ${hint ? `<p class="muted" style="margin:-4px 2px 10px">${hint}</p>` : ''}
+    <div id="rlist">${groups.length ? groups.map(g => `
+      <div class="card group">
+        <button class="group-h" style="width:100%;text-align:left" onclick="openWall('${g.w.id}')"><span class="grow">${esc(g.w.name)}</span>
+          <span class="muted">${plRoutes(g.items.length)}</span><span class="chev">${I.chev}</span></button>
+        ${g.items.map(r => routeRow(r, true)).join('')}
+      </div>`).join('') : `<div class="empty">Brak dróg${q ? ' dla tego wyszukiwania' : ''}.</div>`}
+    </div>
+    <button class="btn btn-primary" onclick="openForm()">${I.plus} Dodaj drogę</button>
+  </div>`;
+}
+function refreshList(){
+  // odśwież tylko listę, żeby nie tracić fokusu w polu wyszukiwania
+  const tmp = document.createElement('div');
+  tmp.innerHTML = viewRoutes();
+  document.getElementById('rlist').replaceWith(tmp.querySelector('#rlist'));
+}
+function routeRow(r, withActions){
+  let acts = '';
+  if(withActions && !DONE(r.status)){
+    acts = r.removed
+      ? `<button class="mini" onclick="event.stopPropagation();setRemoved('${r.id}',false)">Przywróć do zrobienia</button>`
+      : `<button class="mini mini-p" onclick="event.stopPropagation();openSession('${r.id}')">${I.plus} Podejście</button>
+         <button class="mini" onclick="event.stopPropagation();setRemoved('${r.id}',true)">Już jej nie ma</button>`;
+  }
+  return `
+    <div class="rt" onclick="openDetail('${r.id}')">
+      <span class="dot" style="background:${r.color}"></span>
+      ${gradeBadge(r.grade)}
+      <div class="grow" style="min-width:0">
+        <div class="ellipsis"><b>${esc(routeTitle(r))}</b>${[r.sector && esc(r.sector), r.angle && ANGLES[r.angle]].filter(Boolean).map(t => ` <span class="muted">${t}</span>`).join(' ·')}</div>
+        ${r.comment ? `<div class="sub">${esc(r.comment)}</div>` : ''}
+        ${acts ? `<div class="acts">${acts}</div>` : ''}
+      </div>
+      <div class="side">${statusInline(r)}<span class="muted">${fmtShort(r.date)}</span>${r.removed && !DONE(r.status) ? '<span class="tag">zdjęta</span>' : ''}</div>
+    </div>`;
+}
+async function setRemoved(id, v){
+  D.routes.find(r => r.id === id).removed = v;
+  await save(); render(); toast(v ? 'Przeniesiono do niezrobionych' : 'Przywrócono do zrobienia');
+}
+async function changeBase(wallId, key, delta){
+  const w = D.walls.find(x => x.id === wallId);
+  w.base[key] = Math.max(0, w.base[key] + delta);
+  await save(); render();
+  const det = document.getElementById('baseEdit'); if(det) det.open = true;
+}
+
+/* SZCZEGÓŁY ŚCIANKI */
+function viewWall(){
+  const w = D.walls.find(x => x.id === S.wall);
+  if(!w){ S.wall = null; return viewHome(); }
+  const t = wallTotals(w);
+  const rs = sorted(t.rs);
+  const done = rs.filter(r => DONE(r.status));
+  const cnt = s => rs.filter(r => r.status === s).length;
+  const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
+  const best = GRADES.filter(g => done.some(r => r.grade === g)).pop();
+  const q = encodeURIComponent(w.name + (w.city ? ' ' + w.city : ''));
+  const progressRow = (label, list, color) => {
+    const d = list.filter(r => DONE(r.status)).length;
+    return `<div class="bar"><span class="t" style="width:auto;min-width:34px">${label}</span>
+      <div class="track"><div class="fill" style="width:${pct(d, list.length)}%;background:${color}"></div></div>
+      <span class="n" style="width:auto;min-width:46px">${d} z ${list.length}</span></div>`;
+  };
+  return `
+  <div class="page slide">
+    <div class="row" style="margin-bottom:14px">
+      <button class="iconbtn" style="background:#fff" onclick="S.wall=null;render()" aria-label="Wstecz">${I.back}</button>
+      <div class="grow"><div style="font-size:22px;font-weight:700" class="ellipsis">${esc(w.name)}</div>
+        ${w.city ? `<div class="muted">${esc(w.city)}</div>` : ''}</div>
+      <a class="iconbtn" style="background:#fff;color:var(--green)" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener" aria-label="Mapa">${I.map}</a>
+    </div>
+    <div class="card">
+      <h2>Podsumowanie</h2>
+      <div class="stats4">${BASE_KEYS.map(([k,l]) => `<div><b>${t[k]}</b><span class="muted">${l}</span></div>`).join('')}</div>
+      <details id="baseEdit" style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
+        <summary class="muted" style="cursor:pointer">Dane sprzed aplikacji (doliczane do podsumowania)</summary>
+        ${BASE_KEYS.map(([k,l]) => `<div class="row between" style="margin-top:10px"><span>${l}</span>
+          <div class="stepper"><button onclick="changeBase('${w.id}','${k}',-1)" aria-label="mniej">${I.minus}</button><span>${w.base[k]}</span>
+          <button onclick="changeBase('${w.id}','${k}',1)" aria-label="więcej">${I.plus}</button></div></div>`).join('')}
+      </details>
+    </div>
+    <div class="card">
+      <h2>Miejsca na ściance</h2>
+      <div class="chips" style="flex-wrap:wrap">
+        ${w.sectors.map((s, i) => `<button onclick="delSector('${w.id}',${i})">${esc(s)} <span class="muted">✕</span></button>`).join('')}
+        <button onclick="addSector('${w.id}')">${I.plus.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Dodaj miejsce</button>
+      </div>
+      ${w.sectors.length ? '' : '<p class="muted" style="margin-top:8px">Np. Diament, Dach, 30 stopni, Mała sala lewa…</p>'}
+    </div>
+    ${rs.length ? `
+    <div class="card">
+      <h2>Drogi zapisane w aplikacji</h2>
+      <div class="stats3" style="margin-bottom:16px">
+        <div><b>${pct(done.length, rs.length)}%</b><span class="muted">zrobionych</span></div>
+        <div><b>${rs.length}</b><span class="muted">wszystkich dróg</span></div>
+        <div><b>${best || '–'}</b><span class="muted">najtrudniejsza</span></div>
+      </div>
+      <div style="padding-top:12px;border-top:1px solid var(--line)">${routesKpi(rs)}</div>
+    </div>
+    <div class="card">
+      <h2>Wizyty zapisane w aplikacji</h2>
+      ${t.dates.map(d => { const day = rs.filter(r => routeDates(r).includes(d)); return `
+        <div class="visit"><div class="row between"><b>${fmtFull(d)}</b><span class="muted">${plRoutes(day.length)}</span></div>
+          <div style="margin-top:3px">${statusSummary(day.map(r => statusOn(r, d)))}</div></div>`; }).join('')}
+    </div>
+    <div class="card">
+      <h2>Poziomy – zrobione z próbowanych</h2>
+      ${GRADES.filter(g => rs.some(r => r.grade === g)).map(g => progressRow(g, rs.filter(r => r.grade === g), gradeColor(g))).join('')}
+    </div>
+    <div class="card">
+      <h2>Typ ściany – zrobione z próbowanych</h2>
+      ${Object.entries(ANGLES).filter(([k]) => rs.some(r => r.angle === k)).map(([k,l]) => progressRow(l, rs.filter(r => r.angle === k), 'var(--green-2)')).join('') || '<div class="muted">Brak danych</div>'}
+    </div>
+    ${w.sectors.some(s => rs.some(r => r.sector === s)) ? `<div class="card">
+      <h2>Miejsca – zrobione z próbowanych</h2>
+      ${w.sectors.filter(s => rs.some(r => r.sector === s)).map(s => progressRow(esc(s), rs.filter(r => r.sector === s), 'var(--green-2)')).join('')}
+    </div>` : ''}
+    <div class="card group">
+      <div class="group-h">Wszystkie drogi (${rs.length})</div>
+      ${rs.map(r => routeRow(r)).join('')}
+    </div>` : '<div class="empty">Nie masz jeszcze dróg zapisanych na tej ściance.</div>'}
+    <button class="btn btn-primary" onclick="openForm(null,{wallId:'${w.id}',date:today()})">${I.plus} Dodaj drogę na tej ściance</button>
+  </div>`;
+}
+
+/* SZCZEGÓŁY */
+function openDetail(id){ S.detail = id; render(); $main.scrollTop = 0; }
+function viewDetail(){
+  const r = D.routes.find(x => x.id === S.detail);
+  if(!r){ S.detail = null; return viewHome(); }
+  const s = STATUSES[r.status];
+  return `
+  <div class="slide">
+    <div class="dhero">
+      ${r.photos[0] ? `<img src="${r.photos[0]}" alt="">` : ''}
+      <button class="iconbtn" style="left:14px" onclick="S.detail=null;render()">${I.back}</button>
+    </div>
+    <div class="dcard">
+      <div class="row">
+        <div class="bigGrade" style="background:${gradeColor(r.grade)}">${esc(r.grade || '–')}</div>
+        <div class="grow"><div style="font-size:20px;font-weight:700" class="ellipsis">${esc(routeTitle(r))}</div>
+          <div class="muted row" style="gap:5px"><span class="dot" style="width:9px;height:9px;background:${r.color}"></span>${esc(wallName(r.wallId))}</div></div>
+      </div>
+      <div class="meta">
+        <span class="badge" style="background:${s.bg};color:${s.fg}">${s.label} ${s.icon}</span>
+        <span>${fmtFull(r.date)}</span>
+        <span>${plTries(r.attempts)}</span>
+        ${r.sector ? `<span>${esc(r.sector)}</span>` : ''}
+        ${r.angle ? `<span>${ANGLES[r.angle]}</span>` : ''}
+        ${DONE(r.status) && r.doneDate && r.doneDate !== r.date ? `<span>zrobiona ${fmtFull(r.doneDate)}</span>` : ''}
+        ${r.removed && !DONE(r.status) ? '<span class="tag">już jej nie ma</span>' : ''}
+      </div>
+      ${!DONE(r.status) ? `<div class="row" style="margin-bottom:20px">
+        ${r.removed ? '' : `<button class="btn btn-primary" style="height:44px;font-size:15px" onclick="openSession('${r.id}')">${I.plus} Kolejne podejście</button>`}
+        <button class="btn btn-outline" style="height:44px;font-size:15px" onclick="setRemoved('${r.id}',${!r.removed})">${r.removed ? 'Przywróć do zrobienia' : 'Już jej nie ma'}</button>
+      </div>` : ''}
+      ${r.history.length ? `<h2>Historia podejść</h2><div style="margin-bottom:20px">${r.history.map(h => `
+        <div class="hist"><b style="width:84px">${fmtFull(h.date)}</b><span class="${STATUSES[h.status].cls}" style="width:60px">${STATUSES[h.status].label}</span>
+          <span class="muted">${plTries(h.attempts)}</span><span class="grow muted ellipsis">${esc(h.note)}</span></div>`).join('')}</div>` : ''}
+      <h2>Notatki</h2>
+      <p style="color:#444;line-height:1.5;margin-bottom:20px;white-space:pre-wrap">${r.comment ? esc(r.comment) : '<span class="muted">Brak notatek</span>'}</p>
+      ${r.photos.length ? `<h2>Zdjęcia</h2><div class="gallery" style="margin-bottom:20px">${r.photos.map((p,i) => `<img src="${p}" onclick="viewPhoto('${r.id}',${i})" alt="">`).join('')}</div>` : ''}
+      <div class="row" style="padding-bottom:calc(var(--sb) + 10px)">
+        <button class="btn btn-outline" onclick="openForm('${r.id}')">Edytuj</button>
+        <button class="btn btn-danger" onclick="delRoute('${r.id}')" aria-label="Usuń">${I.trash}</button>
+      </div>
+    </div>
+  </div>`;
+}
+function viewPhoto(id, i){
+  const r = D.routes.find(x => x.id === id);
+  $ov.innerHTML = `<div class="viewer" onclick="$ov.innerHTML=''"><img src="${r.photos[i]}" alt=""></div>`;
+}
+async function delRoute(id){
+  if(!confirm('Usunąć tę drogę?')) return;
+  D.routes = D.routes.filter(r => r.id !== id);
+  await save(); S.detail = null; render(); toast('Usunięto');
+}
+
+/* KOLEJNE PODEJŚCIE */
+let G = null;
+function openSession(id){ G = { id, date:today(), status:'top', attempts:1, note:'' }; renderSession(); }
+function renderSession(){
+  const r = D.routes.find(x => x.id === G.id);
+  $ov.innerHTML = `
+  <div class="sheet">
+    <div class="sheet-body">
+      <div class="row between" style="margin-bottom:10px">
+        <button class="iconbtn" onclick="G=null;$ov.innerHTML=''" aria-label="Zamknij">${I.x}</button>
+        <div style="text-align:center"><b style="font-size:17px">Kolejne podejście</b>
+          <div class="muted">${esc(routeTitle(r))} · ${esc(wallName(r.wallId))}</div></div>
+        <span style="width:36px"></span>
+      </div>
+      <div class="card row" style="margin-top:10px">
+        <span class="dot" style="background:${r.color}"></span>${gradeBadge(r.grade)}
+        <span class="grow muted">Dotychczas: ${STATUSES[r.status].label}, ${plTries(r.attempts)}</span>
+      </div>
+      <label class="lbl">Jak poszło?</label>
+      <div class="chips">${['top','zona','nope','test'].map(k => `<button class="${G.status===k?'on':''}" onclick="G.status='${k}';renderSession()">${STATUSES[k].label}</button>`).join('')}</div>
+      <label class="lbl">Liczba prób</label>
+      <div class="stepper">
+        <button onclick="G.attempts=Math.max(1,G.attempts-1);renderSession()" aria-label="mniej">${I.minus}</button>
+        <span>${G.attempts}</span>
+        <button onclick="G.attempts++;renderSession()" aria-label="więcej">${I.plus}</button>
+      </div>
+      <label class="lbl">Data</label>
+      <div class="field">${I.cal}<input type="date" value="${G.date}" onchange="G.date=this.value||today()"></div>
+      <label class="lbl">Notatka (opcjonalnie)</label>
+      <textarea class="field" placeholder="Co się zmieniło?" oninput="G.note=this.value">${esc(G.note)}</textarea>
+    </div>
+    <div class="sheet-foot"><button class="btn btn-primary" onclick="saveSession()">Zapisz podejście</button></div>
+  </div>`;
+}
+async function saveSession(){
+  const r = D.routes.find(x => x.id === G.id);
+  if(!r.history.length) r.history.push({ date:r.date, status:r.status, attempts:r.attempts, note:'' });
+  r.history.push({ date:G.date, status:G.status, attempts:G.attempts, note:G.note.trim() });
+  r.history.sort((a,b) => a.date.localeCompare(b.date));
+  r.attempts += G.attempts;
+  if(RANK[G.status] > RANK[r.status]){
+    if(DONE(G.status)) r.doneDate = G.date;
+    r.status = G.status;
+  }
+  if(DONE(r.status)) r.removed = false;
+  G = null; $ov.innerHTML = '';
+  await save(); render();
+  toast(DONE(r.status) ? 'Brawo! Droga zrobiona' : 'Zapisano podejście');
+}
+
+/* FORMULARZ */
+function openForm(id, prev){
+  if(!D.walls.length){ toast('Najpierw dodaj ściankę w Profilu'); go('profile'); return; }
+  const r = id && D.routes.find(x => x.id === id);
+  F = r ? JSON.parse(JSON.stringify(r)) : {
+    id:null, wallId:prev ? prev.wallId : (sorted(D.routes)[0] || {}).wallId || D.walls[0].id, name:'',
+    angle:null, color:null, grade:null, status:null,
+    attempts:1, date:prev ? prev.date : today(), comment:'', photos:[], history:[], removed:false, doneDate:null
+  };
+  renderForm();
+}
+function renderForm(){
+  $ov.innerHTML = `
+  <div class="sheet">
+    <div class="sheet-body">
+      <div class="row between" style="margin-bottom:10px">
+        <button class="iconbtn" onclick="closeForm()" aria-label="Zamknij">${I.x}</button>
+        <div style="text-align:center"><b style="font-size:17px">${F.id ? 'Edytuj drogę' : 'Dodaj drogę'}</b>
+          <div class="muted">Droga #${F.id ? dayOrdinal(F) : D.routes.filter(x => x.date === F.date).length + 1} z dnia ${fmtFull(F.date)}</div></div>
+        <span style="width:36px"></span>
+      </div>
+      <div class="photo-main">
+        ${F.photos[0] ? `<img src="${F.photos[0]}" alt="">` : `<span class="muted" style="color:#ddd">Dodaj zdjęcie drogi</span>`}
+        <label>${I.camera}<input type="file" accept="image/*" multiple hidden onchange="addPhotos(this.files)"></label>
+      </div>
+      ${F.photos.length ? `<div class="thumbs">${F.photos.map((p,i) => `<div class="thumb"><img src="${p}" alt=""><button onclick="F.photos.splice(${i},1);renderForm()">${I.x}</button></div>`).join('')}</div>` : ''}
+
+      <label class="lbl">Ścianka</label>
+      <div class="field">${I.mount}<select onchange="F.wallId=this.value;F.sector=null;renderForm()">
+        ${D.walls.map(w => `<option value="${w.id}" ${w.id===F.wallId?'selected':''}>${esc(w.name)}</option>`).join('')}
+      </select></div>
+
+      <label class="lbl">Kolor</label>
+      <div class="colors">${HOLD_COLORS.map(c => `<button class="${F.color===c?'on':''}" style="background:${c}" onclick="F.color=F.color==='${c}'?null:'${c}';renderForm()" aria-label="kolor"></button>`).join('')}</div>
+
+      <label class="lbl">Poziom trudności</label>
+      <div class="chips grades">${GRADES.map(g => `<button class="${F.grade===g?'on':''}" style="${F.grade===g?`background:${gradeColor(g)};border-color:${gradeColor(g)}`:''}" onclick="F.grade='${g}';renderForm()">${g}</button>`).join('')}</div>
+
+      <label class="lbl">Status</label>
+      <div class="chips">${Object.entries(STATUSES).map(([k,s]) => `<button class="${F.status===k?'on':''}" onclick="setStatus('${k}')">${s.label}</button>`).join('')}</div>
+
+      <label class="lbl">Typ ściany</label>
+      <div class="chips">${Object.entries(ANGLES).map(([k,l]) => `<button class="${F.angle===k?'on':''}" onclick="F.angle=F.angle==='${k}'?null:'${k}';renderForm()">${l}</button>`).join('')}</div>
+
+      <label class="lbl">Liczba prób</label>
+      <div class="stepper">
+        <button onclick="F.attempts=Math.max(1,F.attempts-1);renderForm()" aria-label="mniej">${I.minus}</button>
+        <span>${F.attempts}</span>
+        <button onclick="F.attempts++;if(F.status==='flash')F.status='top';renderForm()" aria-label="więcej">${I.plus}</button>
+      </div>
+
+      <label class="lbl">Miejsce</label>
+      <div class="chips" style="flex-wrap:wrap">${(wallOf(F.wallId) || { sectors:[] }).sectors.map((s, i) => `<button class="${F.sector===s?'on':''}" onclick="pickSector(${i})">${esc(s)}</button>`).join('')}
+        <button onclick="addSector(F.wallId, true)">${I.plus.replace('<svg', '<svg style="width:12px;height:12px;vertical-align:-1px"')} Nowe miejsce</button></div>
+
+      <label class="lbl">Data</label>
+      <div class="field">${I.cal}<input type="date" value="${F.date}" onchange="F.date=this.value||today();renderForm()"></div>
+
+      <label class="lbl">Komentarz (opcjonalnie)</label>
+      <textarea class="field" placeholder="Np. sloper na końcu, tricky move..." oninput="F.comment=this.value">${esc(F.comment)}</textarea>
+
+      <label class="lbl">Nazwa (opcjonalnie)</label>
+      <div class="field"><input placeholder="Np. Rysa przy oknie" value="${esc(F.name)}" oninput="F.name=this.value"></div>
+    </div>
+    <div class="sheet-foot row">
+      ${F.id ? '' : `<button class="btn btn-outline" onclick="saveForm(true)">${I.plus} Zapisz i kolejna</button>`}
+      <button class="btn btn-primary" onclick="saveForm()">Zapisz</button>
+    </div>
+  </div>`;
+}
+function setStatus(k){
+  F.status = k;
+  if(k === 'flash') F.attempts = 1;
+  renderForm();
+}
+function closeForm(){ F = null; $ov.innerHTML = ''; }
+async function saveForm(next){
+  if(!F.grade){ toast('Wybierz poziom trudności'); return; }
+  if(!F.status){ toast('Wybierz status'); return; }
+  F.name = F.name.trim();
+  if(F.id){
+    const i = D.routes.findIndex(r => r.id === F.id);
+    D.routes[i] = F;
+  } else {
+    F.id = uid(); F.createdAt = Date.now();
+    D.routes.push(F);
+  }
+  const saved = F;
+  await save();
+  if(next){
+    openForm(null, saved);
+    document.querySelector('.sheet-body').scrollTop = 0;
+    toast(`Zapisano drogę #${dayOrdinal(saved)}`);
+    render();
+    return;
+  }
+  closeForm();
+  S.detail = saved.id; render(); toast('Zapisano');
+}
+async function addPhotos(files){
+  for(const f of files){
+    try { F.photos.push(await resizeImage(f, 1280, .75)); }
+    catch(e){ toast('Nie udało się wczytać zdjęcia'); }
+  }
+  renderForm();
+}
+function resizeImage(file, max, q){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', q));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(); };
+    img.src = url;
+  });
+}
+
+/* MIESIĄC PO MIESIĄCU */
+function viewMonthChart(){
+  const now = new Date(), curY = now.getFullYear(), m = S.mMetric;
+  const years = [...new Set([String(curY), ...Object.keys(D.months).map(k => k.slice(0, 4)),
+    ...D.routes.flatMap(routeDates).map(d => d.slice(0, 4))])].sort();
+  if(!years.includes(String(S.year))) S.year = curY;
+  const lastM = +S.year === curY ? now.getMonth() : 11;
+  const data = Array.from({ length:lastM + 1 }, (_, i) => {
+    const ym = `${S.year}-${String(i + 1).padStart(2, '0')}`;
+    return { ym, i, v:monthTotals(ym)[m] };
+  });
+  const color = { visits:'#f08a24', fives:'#2f7a5d', sixes:'#8e4ec6', comps:'#3e63dd' }[m];
+  const W = 320, H = 180, L = 24, B = 22, T = 14, R = 6, gw = (W - L - R) / 12;
+  const top = Math.ceil(Math.max(4, ...data.map(d => d.v)) / 4) * 4;
+  const y = n => T + (H - T - B) * (1 - n / top);
+  const cx = i => L + i * gw + gw / 2;
+  const grid = [0,1,2,3,4].map(k => { const v = top * k / 4; return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#eceeec"/><text x="${L-5}" y="${y(v)+4}" font-size="9" fill="#7a817d" text-anchor="end" stroke="none">${v}</text>`; }).join('');
+  const bars = data.map(d => `<g onclick="openMonth('${d.ym}')" style="cursor:pointer">
+    <rect x="${L + d.i * gw}" y="${T}" width="${gw}" height="${H - T - B}" fill="transparent" stroke="none"/>
+    <rect x="${cx(d.i) - 7}" y="${y(d.v)}" width="14" height="${y(0) - y(d.v)}" rx="3" fill="${color}" stroke="none"/>
+    ${d.v ? `<text x="${cx(d.i)}" y="${y(d.v) - 3}" font-size="9" font-weight="700" fill="#1b1f1d" text-anchor="middle" stroke="none">${d.v}</text>` : ''}</g>`).join('');
+  const labels = MONTHS.map((mm, i) => `<text x="${cx(i)}" y="${H-6}" font-size="9" fill="#7a817d" text-anchor="middle" stroke="none">${mm}</text>`).join('');
+  return `
+  <div class="card chart">
+    <div class="row between" style="margin-bottom:10px">
+      <h2 style="margin:0">Miesiąc po miesiącu</h2>
+      ${years.length > 1 ? `<div class="pills" style="margin:0">${years.map(yv => `<button class="${+S.year===+yv?'on':''}" onclick="S.year=${yv};render()">${yv}</button>`).join('')}</div>` : `<span class="muted">${S.year}</span>`}
+    </div>
+    <div class="seg">${BASE_KEYS.map(([k,l]) => `<button class="${m===k?'on':''}" onclick="S.mMetric='${k}';render()">${l}</button>`).join('')}</div>
+    <svg viewBox="0 0 ${W} ${H}">${grid}${bars}${labels}</svg>
+    <p class="muted" style="margin-top:6px;font-size:11px">Razem: <b>${data.reduce((a, d) => a + d.v, 0)}</b>. Dotknij miesiąca, żeby poprawić dane sprzed aplikacji.</p>
+  </div>`;
+}
+function openMonth(ym){ S.monthEdit = ym; renderMonth(); }
+function renderMonth(){
+  const ym = S.monthEdit, b = D.months[ym] || {};
+  $ov.innerHTML = `
+  <div class="sheet">
+    <div class="sheet-body">
+      <div class="row between" style="margin-bottom:10px">
+        <button class="iconbtn" onclick="closeMonth()" aria-label="Zamknij">${I.x}</button>
+        <b style="font-size:17px">${MONTHS_FULL[+ym.slice(5) - 1]} ${ym.slice(0, 4)}</b>
+        <span style="width:36px"></span>
+      </div>
+      <p class="muted">Dane sprzed aplikacji. Doliczają się do tego, co zapiszesz w aplikacji w tym miesiącu.</p>
+      <div class="card" style="margin-top:12px">
+        ${MONTH_KEYS.map(([k,l]) => `<div class="row between" style="margin:6px 0"><span>${l}</span>
+          <div class="stepper"><button onclick="changeMonth('${k}',-1)" aria-label="mniej">${I.minus}</button><span>${b[k] || 0}</span>
+          <button onclick="changeMonth('${k}',1)" aria-label="więcej">${I.plus}</button></div></div>`).join('')}
+      </div>
+    </div>
+    <div class="sheet-foot"><button class="btn btn-primary" onclick="closeMonth()">Gotowe</button></div>
+  </div>`;
+}
+async function changeMonth(key, delta){
+  const ym = S.monthEdit;
+  D.months[ym] = D.months[ym] || Object.fromEntries(MONTH_KEYS.map(([k]) => [k, 0]));
+  D.months[ym][key] = Math.max(0, D.months[ym][key] + delta);
+  await save(); renderMonth();
+}
+function closeMonth(){ S.monthEdit = null; $ov.innerHTML = ''; render(); }
+
+/* STATYSTYKI */
+function viewStats(){
+  const months = [...new Set(D.routes.map(r => statDate(r).slice(0, 7)))].sort();
+  if(S.period !== 'all' && !months.includes(S.period)) S.period = 'all';
+  const inP = D.routes.filter(r => S.period === 'all' || statDate(r).startsWith(S.period));
+  const done = inP.filter(r => DONE(r.status));
+  const cnt = s => inP.filter(r => r.status === s).length;
+  const curY = String(new Date().getFullYear());
+  const monthLabel = ym => MONTHS[+ym.slice(5) - 1] + (ym.startsWith(curY) ? '' : ' ’' + ym.slice(2, 4));
+  const byGrade = {};
+  done.forEach(r => byGrade[r.grade] = (byGrade[r.grade] || 0) + 1);
+  const grades = GRADES.filter(g => byGrade[g]);
+  const maxG = Math.max(1, ...Object.values(byGrade));
+
+  // progres: zrobione drogi od stycznia bieżącego roku
+  const now = new Date(), pts = [];
+  for(let i = 0; i <= now.getMonth(); i++){
+    const d = new Date(now.getFullYear(), i, 1);
+    const n = D.routes.filter(r => { const x = parseDate(doneDate(r)); return DONE(r.status) && x.getFullYear() === d.getFullYear() && x.getMonth() === d.getMonth(); }).length;
+    pts.push({ l:MONTHS[d.getMonth()], n });
+  }
+  const maxP = Math.max(4, ...pts.map(p => p.n));
+  const top = Math.ceil(maxP / 4) * 4;
+  const W = 320, H = 170, L = 28, B = 22, T = 8, R = 10;
+  const x = i => L + i * (W - L - R) / Math.max(1, pts.length - 1), y = n => T + (H - T - B) * (1 - n / top);
+  const grid = [0,1,2,3,4].map(k => { const v = top * k / 4; return `<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="#eceeec"/><text x="${L-6}" y="${y(v)+4}" font-size="10" fill="#7a817d" text-anchor="end" stroke="none">${v}</text>`; }).join('');
+
+  return `
+  <div class="page slide">
+    <h1>Statystyki</h1>
+    <h2 style="margin:0 2px 10px">Drogi zapisane w aplikacji</h2>
+    <div class="mgrid">
+      <button class="${S.period==='all'?'on':''}" onclick="S.period='all';render()">Wszystko</button>
+      ${months.map(m => `<button class="${S.period===m?'on':''}" onclick="S.period='${m}';render()">${monthLabel(m)}</button>`).join('')}
+    </div>
+    <div class="card">${routesKpi(inP)}</div>
+    <div class="card">
+      <h2>Rozkład poziomów</h2>
+      ${grades.length ? grades.map(g => `
+        <div class="bar"><span class="t">${g}</span><div class="track"><div class="fill" style="width:${byGrade[g]/maxG*100}%;background:${gradeColor(g)}"></div></div><span class="n">${byGrade[g]}</span></div>`).join('')
+        : '<div class="empty">Brak zrobionych dróg w tym okresie</div>'}
+    </div>
+    <div class="card chart">
+      <h2>Progres w czasie</h2>
+      <svg viewBox="0 0 ${W} ${H}">
+        ${grid}
+        <polyline points="${pts.map((p,i) => `${x(i)},${y(p.n)}`).join(' ')}" stroke="#2f7a5d" stroke-width="2.5" fill="none"/>
+        ${pts.map((p,i) => `<circle cx="${x(i)}" cy="${y(p.n)}" r="4" fill="#2f7a5d" stroke="#fff" stroke-width="1.5"/><text x="${x(i)}" y="${H-5}" font-size="10" fill="#7a817d" text-anchor="middle" stroke="none">${p.l}</text>`).join('')}
+      </svg>
+    </div>
+  </div>`;
+}
+
+/* ŚCIANKI */
+function viewMap(){
+  const m = S.metric;
+  const rows = D.walls.map(w => ({ w, t:wallTotals(w) }));
+  const sum = k => rows.reduce((a, x) => a + x.t[k], 0);
+  const ranked = rows.filter(x => x.t[m]).sort((a, b) => b.t[m] - a.t[m]);
+  const max = Math.max(1, ...ranked.map(x => x.t[m]));
+  return `
+  <div class="page slide">
+    <h1>Ścianki</h1>
+    ${D.walls.length ? `
+    <div class="card"><div class="stats4">${BASE_KEYS.map(([k,l]) => `<div><b>${sum(k)}</b><span class="muted">${l}</span></div>`).join('')}</div></div>
+    <div class="card">
+      <h2>Gdzie najwięcej?</h2>
+      <div class="seg">${BASE_KEYS.map(([k,l]) => `<button class="${m===k?'on':''}" onclick="S.metric='${k}';render()">${l}</button>`).join('')}</div>
+      ${ranked.length ? ranked.map(({ w, t }) => `
+        <div class="bar" onclick="openWall('${w.id}')" style="cursor:pointer"><span class="t ellipsis" style="width:110px">${esc(w.name)}</span>
+          <div class="track" style="height:14px;border-radius:7px"><div class="fill" style="width:${t[m] / max * 100}%;background:var(--green-2)"></div></div>
+          <span class="n" style="width:28px">${t[m]}</span></div>`).join('') : '<div class="muted">Brak danych</div>'}
+    </div>
+    ${viewMonthChart()}
+    <h2 style="margin:20px 2px 10px">Wszystkie ścianki</h2>
+    <div class="card group">
+      ${D.walls.map(w => `<div class="wrow" onclick="openWall('${w.id}')"><b class="grow ellipsis">${esc(w.name)}</b>
+        ${w.city ? `<span class="muted">${esc(w.city)}</span>` : ''}<span class="chev">${I.chev}</span></div>`).join('')}
+    </div>
+    <p class="muted" style="margin:0 2px">Piąteczki i szósteczki to zrobione drogi (flash lub top) na poziomie 5 i 6.</p>`
+    : '<div class="empty">Brak ścianek – dodaj je w Profilu</div>'}
+  </div>`;
+}
+
+/* PROFIL */
+function viewProfile(){
+  return `
+  <div class="page slide">
+    <h1>Profil</h1>
+    <div class="card">
+      <label class="lbl" style="margin-top:0">Imię</label>
+      <div class="field"><input value="${esc(D.settings.name)}" onchange="setName(this.value)" placeholder="Twoje imię"></div>
+    </div>
+    <div class="card">
+      <h2>Ścianki</h2>
+      ${D.walls.map(w => `<div class="list-item">
+        <span class="grow"><b>${esc(w.name)}</b><br><span class="muted">${esc(w.city || '')} · ${D.routes.filter(r => r.wallId===w.id).length} dróg</span></span>
+        <button class="iconbtn" style="color:var(--red)" onclick="delWall('${w.id}')" aria-label="Usuń">${I.trash}</button>
+      </div>`).join('')}
+      <div class="row" style="margin-top:12px">
+        <div class="field grow"><input id="wName" placeholder="Nazwa ścianki"></div>
+        <div class="field" style="width:110px"><input id="wCity" placeholder="Miasto"></div>
+      </div>
+      <button class="btn btn-outline" style="margin-top:10px" onclick="addWall()">${I.plus} Dodaj ściankę</button>
+    </div>
+    <div class="card">
+      <h2>Dane</h2>
+      <button class="btn btn-outline" onclick="exportData()">${I.download} Eksportuj kopię (JSON)</button>
+      <label class="btn btn-outline" style="margin-top:10px">${I.upload} Importuj kopię
+        <input type="file" accept="application/json,.json" hidden onchange="importData(this.files[0])"></label>
+      <p class="muted" style="margin-top:12px">Dane są przechowywane lokalnie na tym urządzeniu. Rób regularnie kopię zapasową.</p>
+    </div>
+  </div>`;
+}
+async function setName(v){ D.settings.name = v.trim() || 'Wspinaczu'; await save(); toast('Zapisano'); }
+async function addWall(){
+  const n = document.getElementById('wName').value.trim();
+  const c = document.getElementById('wCity').value.trim();
+  if(!n){ toast('Podaj nazwę ścianki'); return; }
+  D.walls.push(normalizeWall({ id:uid(), name:n, city:c }));
+  await save(); render(); toast('Dodano ściankę');
+}
+async function delWall(id){
+  const n = D.routes.filter(r => r.wallId === id).length;
+  if(!confirm(n ? `Usunąć ściankę razem z ${n} drogami?` : 'Usunąć ściankę?')) return;
+  D.walls = D.walls.filter(w => w.id !== id);
+  D.routes = D.routes.filter(r => r.wallId !== id);
+  D.visits = D.visits.filter(v => v.wallId !== id);
+  await save(); render();
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(D)], { type:'application/json' });
+  const file = new File([blob], `wspinanie-${today()}.json`, { type:'application/json' });
+  if(navigator.canShare && navigator.canShare({ files:[file] })){
+    navigator.share({ files:[file], title:'Kopia danych' }).catch(() => {});
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = file.name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+}
+async function importData(file){
+  if(!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if(!Array.isArray(d.walls) || !Array.isArray(d.routes)) throw new Error('format');
+    d.routes = d.routes.map(r => r && normalizeRoute(r));
+    const okRoute = r => r && typeof r.id === 'string' && STATUSES[r.status] && (r.grade === null || GRADES.includes(r.grade))
+      && /^\d{4}-\d{2}-\d{2}$/.test(r.date) && (r.color === null || /^#[0-9a-f]{6}$/i.test(r.color) || HOLD_COLORS.includes(r.color))
+      && Array.isArray(r.photos) && r.photos.every(p => typeof p === 'string' && p.startsWith('data:image/'));
+    const okWall = w => w && typeof w.id === 'string' && /^[a-z0-9]+$/i.test(w.id) && typeof w.name === 'string';
+    if(!d.walls.every(okWall) || !d.routes.every(r => okRoute(r) && /^[a-z0-9]+$/i.test(r.id))) throw new Error('dane');
+    if(!confirm('Zastąpić obecne dane danymi z pliku?')) return;
+    D = { walls:d.walls.map(normalizeWall), routes:d.routes, months:normalizeMonths(d.months), visits:normalizeVisits(d.visits),
+          settings:{ name:String((d.settings || {}).name || D.settings.name) } };
+    await save(); render(); toast('Zaimportowano');
+  } catch(e){ toast('Nieprawidłowy plik'); }
+}
+
+/* ---------- toast ---------- */
+let tt;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+/* ---------- PWA: ikona + manifest generowane w locie ---------- */
+function setupPwa(){
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#1d5c45'; g.fillRect(0, 0, 512, 512);
+  g.fillStyle = '#fff';
+  g.beginPath(); g.moveTo(90, 400); g.lineTo(230, 150); g.lineTo(310, 280); g.lineTo(350, 220); g.lineTo(430, 400); g.closePath(); g.fill();
+  [['#f5c400',200,330],['#e5484d',260,240],['#1e88e5',340,330]].forEach(([col,x,y]) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, 18, 0, 7); g.fill(); });
+  const icon = c.toDataURL('image/png');
+  document.getElementById('appleIcon').href = icon;
+  const manifest = {
+    name:'Moje drogi – dziennik wspinaczkowy', short_name:'Moje drogi', display:'standalone',
+    start_url:location.href.split('#')[0], background_color:'#f4f5f3', theme_color:'#1d5c45',
+    icons:[{ src:icon, sizes:'512x512', type:'image/png' }]
+  };
+  document.getElementById('manifestLink').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], { type:'application/manifest+json' }));
+}
+
+init().catch(e => { document.body.innerHTML = '<p style="padding:40px">Błąd uruchomienia: ' + esc(e.message || e) + '</p>'; });
+</script>
+</body>
+</html>
