@@ -273,11 +273,12 @@ const DEFAULT_WALLS = [
   { name:'Flow Długosza', sectors:['Wejściowy połóg','Soczewka','20/10','Prawy dach','Lewy dach','15°','Prawy diament','Lewy diament','Końcowy połóg','Comp wall','20°','Sprawy wall'] },
   { name:'Lokal 32', sectors:['Grotka','Lewa strona','Prawa strona','Połóg','Krab','Lewy Pion','Prawy Pion','Lewe okna','Prawe okna','Przewis','Logo','Dziób'] },
   { name:'Flow Robotnicza', sectors:['Prawe zacięcie','Przedkant','Prawa pochylnia','Lewa pochylnia','23°','Wcięcie','Końcowy połóg','Lewe zacięcie','Light','Soczewka','Kant','Koniec lightu','Zatoka 1','Zatoka 2','Sprawy wall'] },
-  { name:'Groto', sectors:['Duży sześciokąt','Mały sześciokąt','Prawe zacięcie','Beczka','Piony','Kaskady','Diament','Wu','Połóg','Tył wieży','Groto'] },
-  { name:'Groto Poznań', sectors:['Comp wall','Góral','Beczka','Tyły','Daszek','Grzybnia','Brama','Dziób','Antresola','Przy wejściu','Pod antresolą','Lewa strona','Przód','Prawa strona','Tył','Lewa wieża','Prawa wieża','Prawa Grota','Lewa Grota'] },
-  { name:'Fpinka', sectors:['Góra','Antresola'] },
+  { name:'Groto', sectors:['Duży sześciokąt','Mały sześciokąt','Prawe zacięcie','Beczka','Piony','Kaskady','Diament','Wu','Połóg','Tył wieży','Groto','Prawa Grota','Lewa Grota'] },
+  { name:'Groto Poznań', sectors:['Comp wall','Góral','Beczka','Tyły','Daszek','Grzybnia','Brama','Dziób','Lewa wieża','Prawa wieża'] },
+  { name:'Fpinka', sectors:['Góra','Antresola','Przy wejściu','Pod antresolą','Lewa strona','Przód','Prawa strona','Tył'] },
   { name:'West', sectors:['Kids wall','Plaża','Maczuga','Skrzydło','Duży przewis','Beczka','Przecinek','25°','Klepsydra','Duży pion','Duży połóg','15°','Spray wall','Lodowisko','Złamany pion','Kometa','Front','Sanki','Mały połóg','Kilter board','Campus'] },
 ];
+const DEFAULT_SECTORS = new Set(DEFAULT_WALLS.flatMap(w => w.sectors));
 const OLD_DEFAULT_WALLS = ['Boulderownia Wrocław','Boulderowania Wrocław','Strefa Wspinaczkowa','Srefa Wspinaczkowa','Skarpa Bytom'];
 function normalizeWall(w){
   const b = w.base || {};
@@ -435,7 +436,8 @@ function ensureDefaultWalls(){
   DEFAULT_WALLS.forEach(def => {
     let wall = D.walls.find(w => w.name === def.name);
     if(!wall){ wall = normalizeWall({ id:uid(), name:def.name }); D.walls.push(wall); }
-    wall.sectors = [...new Set([...def.sectors, ...wall.sectors])];
+    const customSectors = wall.sectors.filter(s => !DEFAULT_SECTORS.has(s));
+    wall.sectors = [...new Set([...def.sectors, ...customSectors])];
   });
 }
 function setSecF(i){ S.secF = i < 0 ? null : wallOf(S.wallF).sectors[i]; render(); }
