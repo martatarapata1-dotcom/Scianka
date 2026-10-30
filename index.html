@@ -282,8 +282,12 @@ const DEFAULT_SECTORS = new Set(DEFAULT_WALLS.flatMap(w => w.sectors));
 const OLD_DEFAULT_WALLS = ['Boulderownia Wrocław','Boulderowania Wrocław','Strefa Wspinaczkowa','Srefa Wspinaczkowa','Skarpa Bytom'];
 function normalizeWall(w){
   const b = w.base || {};
+  const monthly = Object.fromEntries(Object.entries(w.monthly && typeof w.monthly === 'object' ? w.monthly : {})
+    .filter(([ym, v]) => /^\d{4}-\d{2}$/.test(ym) && v)
+    .map(([ym, v]) => [ym, Object.fromEntries(BASE_KEYS.map(([k]) => [k, Math.max(0, parseInt(v[k]) || 0)]))]));
   return { id:w.id, name:String(w.name), city:String(w.city || ''),
     base:Object.fromEntries(BASE_KEYS.map(([k]) => [k, Math.max(0, parseInt(b[k]) || 0)])),
+    monthly,
     sectors:[...new Set((Array.isArray(w.sectors) ? w.sectors : []).filter(s => typeof s === 'string' && s.trim()).map(s => s.trim().slice(0, 40)))] };
 }
 const routeDates = r => [r.date, ...r.history.map(h => h.date)];
@@ -295,8 +299,9 @@ function wallTotals(w){
   const rs = D.routes.filter(r => r.wallId === w.id);
   const dates = [...new Set([...rs.flatMap(routeDates), ...D.visits.filter(v => v.wallId === w.id).map(v => v.date)])].sort().reverse();
   const doneG = g => rs.filter(r => DONE(r.status) && r.grade === g).length;
-  return { visits:w.base.visits + dates.length, fives:w.base.fives + doneG('5'), sixes:w.base.sixes + doneG('6'),
-    comps:w.base.comps, dates, rs };
+  const historic = k => Math.max(w.base[k], Object.values(w.monthly || {}).reduce((sum, month) => sum + month[k], 0));
+  return { visits:historic('visits') + dates.length, fives:historic('fives') + doneG('5'), sixes:historic('sixes') + doneG('6'),
+    comps:historic('comps'), dates, rs };
 }
 const MONTH_KEYS = [['visits','Wizyty'],['fives','Piąteczki'],['sixes','Szósteczki'],['newWalls','Nowe ścianki'],['comps','Zawody']];
 function normalizeMonths(m){
@@ -309,11 +314,13 @@ function normalizeMonths(m){
 // dane sprzed aplikacji + to, co wynika z zapisanych dróg
 function monthTotals(ym){
   const b = D.months[ym] || {};
+  const historical = k => D.walls.reduce((sum, w) => sum + ((w.monthly || {})[ym]?.[k] || 0), 0);
   const visits = new Set([...D.routes.flatMap(r => routeDates(r).map(d => r.wallId + '|' + d)), ...D.visits.map(v => v.wallId + '|' + v.date)]
     .filter(k => k.split('|')[1].startsWith(ym))).size;
   const doneG = g => D.routes.filter(r => DONE(r.status) && r.grade === g && doneDate(r).startsWith(ym)).length;
-  return { visits:(b.visits || 0) + visits, fives:(b.fives || 0) + doneG('5'), sixes:(b.sixes || 0) + doneG('6'),
-    newWalls:b.newWalls || 0, comps:b.comps || 0 };
+  return { visits:(b.visits || 0) + historical('visits') + visits, fives:(b.fives || 0) + historical('fives') + doneG('5'),
+    sixes:(b.sixes || 0) + historical('sixes') + doneG('6'), newWalls:b.newWalls || 0,
+    comps:(b.comps || 0) + historical('comps') };
 }
 // wizyty bez zapisanych dróg
 function normalizeVisits(v){
@@ -393,7 +400,7 @@ const DB = {
 
 /* ---------- stan ---------- */
 let D = { walls:[], routes:[], months:{}, visits:[], settings:{ name:'Wspinaczu', homePrompt:'Co dzisiaj wpadło?' } };
-let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', periodYear:String(new Date().getFullYear()), gradeStatus:null, metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, detail:null, wall:null };
+let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', periodYear:String(new Date().getFullYear()), gradeStatus:null, metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, baseMonth:today().slice(0, 7), detail:null, wall:null };
 let F = null; // stan formularza
 
 async function save(){
@@ -584,8 +591,27 @@ async function setRemoved(id, v){
 async function changeBase(wallId, key, delta){
   const w = D.walls.find(x => x.id === wallId);
   w.base[key] = Math.max(0, w.base[key] + delta);
-  await save(); render();
-  const det = document.getElementById('baseEdit'); if(det) det.open = true;
+  await save(); refreshWallData();
+}
+function refreshWallData(){
+  const scroll = $main.scrollTop;
+  render();
+  requestAnimationFrame(() => {
+    $main.scrollTop = scroll;
+    const det = document.getElementById('baseEdit'); if(det) det.open = true;
+  });
+}
+function setBaseMonth(ym){
+  if(!/^\d{4}-\d{2}$/.test(ym)) return;
+  S.baseMonth = ym; refreshWallData();
+}
+async function changeWallMonth(wallId, key, delta){
+  const w = wallOf(wallId), ym = S.baseMonth;
+  if(!w || !/^\d{4}-\d{2}$/.test(ym)) return;
+  w.monthly[ym] = w.monthly[ym] || Object.fromEntries(BASE_KEYS.map(([k]) => [k, 0]));
+  w.monthly[ym][key] = Math.max(0, w.monthly[ym][key] + delta);
+  if(Object.values(w.monthly[ym]).every(value => value === 0)) delete w.monthly[ym];
+  await save(); refreshWallData();
 }
 
 /* SZCZEGÓŁY ŚCIANKI */
@@ -599,6 +625,8 @@ function viewWall(){
   const pct = (a, b) => b ? Math.round(a / b * 100) : 0;
   const best = GRADES.filter(g => done.some(r => r.grade === g)).pop();
   const q = encodeURIComponent(w.name + (w.city ? ' ' + w.city : ''));
+  const baseMonth = /^\d{4}-\d{2}$/.test(S.baseMonth) ? S.baseMonth : today().slice(0, 7);
+  const monthData = w.monthly[baseMonth] || {};
   const progressRow = (label, list, color) => {
     const d = list.filter(r => DONE(r.status)).length;
     return `<div class="bar"><span class="t" style="width:auto;min-width:34px">${label}</span>
@@ -617,10 +645,16 @@ function viewWall(){
       <h2>Podsumowanie</h2>
       <div class="stats4">${BASE_KEYS.map(([k,l]) => `<div><b>${t[k]}</b><span class="muted">${l}</span></div>`).join('')}</div>
       <details id="baseEdit" style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
-        <summary class="muted" style="cursor:pointer">Dane sprzed aplikacji (doliczane do podsumowania)</summary>
+        <summary class="muted" style="cursor:pointer">Suma historyczna bez podziału na miesiące</summary>
         ${BASE_KEYS.map(([k,l]) => `<div class="row between" style="margin-top:10px"><span>${l}</span>
           <div class="stepper"><button onclick="changeBase('${w.id}','${k}',-1)" aria-label="mniej">${I.minus}</button><span>${w.base[k]}</span>
           <button onclick="changeBase('${w.id}','${k}',1)" aria-label="więcej">${I.plus}</button></div></div>`).join('')}
+        <label class="lbl">Dane historyczne według miesiąca</label>
+        <div class="field">${I.cal}<input type="month" value="${baseMonth}" onchange="setBaseMonth(this.value)"></div>
+        <p class="muted" style="margin-top:8px">Suma miesięcy pojawi się na wykresie. W podsumowaniu nie dubluje sumy historycznej.</p>
+        ${BASE_KEYS.map(([k,l]) => `<div class="row between" style="margin-top:10px"><span>${l}</span>
+          <div class="stepper"><button onclick="changeWallMonth('${w.id}','${k}',-1)" aria-label="mniej">${I.minus}</button><span>${monthData[k] || 0}</span>
+          <button onclick="changeWallMonth('${w.id}','${k}',1)" aria-label="więcej">${I.plus}</button></div></div>`).join('')}
       </details>
     </div>
     ${rs.length ? `
@@ -908,7 +942,8 @@ function resizeImage(file, max, q){
 function viewMonthChart(){
   const now = new Date(), curY = now.getFullYear(), m = S.mMetric;
   const years = [...new Set([String(curY), ...Object.keys(D.months).map(k => k.slice(0, 4)),
-    ...D.routes.flatMap(routeDates).map(d => d.slice(0, 4))])].sort();
+    ...D.routes.flatMap(routeDates).map(d => d.slice(0, 4)),
+    ...D.walls.flatMap(w => Object.keys(w.monthly || {}).map(ym => ym.slice(0, 4)))])].sort();
   if(!years.includes(String(S.year))) S.year = curY;
   const lastM = +S.year === curY ? now.getMonth() : 11;
   const data = Array.from({ length:lastM + 1 }, (_, i) => {
