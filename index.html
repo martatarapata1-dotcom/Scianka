@@ -104,6 +104,17 @@ h2{font-size:16px;font-weight:700;margin-bottom:12px}
 .visit:first-of-type{border-top:0}
 .hist{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
 .hist:first-of-type{border-top:0}
+.weekdays,.calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.weekdays{margin-bottom:5px;text-align:center;color:var(--muted);font-size:11px}
+.cal-day{aspect-ratio:1;min-width:0;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:13px}
+.cal-day.blank{visibility:hidden}
+.cal-day.has-visit{background:#fff}
+.cal-day.selected{background:var(--green);color:#fff;font-weight:700}
+.cal-day-count{font-size:9px;line-height:1;color:var(--muted)}
+.cal-day.selected .cal-day-count{color:#e6f2ec}
+.day-route{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px 0;border-top:1px solid var(--line);width:100%;text-align:left}
+.day-route:first-of-type{border-top:0}
+.day-route .st{white-space:nowrap}
 .grade{display:inline-grid;place-items:center;min-width:26px;height:24px;padding:0 5px;border-radius:7px;background:#eef0ef;color:#333;font-weight:700;font-size:12px}
 .link{color:var(--green);font-weight:600;cursor:pointer}
 .st{display:flex;align-items:center;gap:4px;font-size:12px;justify-content:flex-end}
@@ -263,7 +274,8 @@ function normalizeRoute(r){
     removed:!!r.removed, doneDate:isDate(r.doneDate) ? r.doneDate : null,
     sector:typeof r.sector === 'string' && r.sector.trim() ? r.sector.trim().slice(0, 40) : null,
     history:(Array.isArray(r.history) ? r.history : []).filter(h => h && isDate(h.date) && STATUSES[h.status])
-      .map(h => ({ date:h.date, status:h.status, attempts:Math.max(1, parseInt(h.attempts) || 1), note:String(h.note || '') })) };
+      .map(h => ({ date:h.date, status:h.status, attempts:Math.max(1, parseInt(h.attempts) || 1), note:String(h.note || ''),
+        sector:typeof h.sector === 'string' && h.sector.trim() ? h.sector.trim().slice(0, 40) : null })) };
 }
 const isDate = s => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
 const RANK = { test:0, nope:1, zona:2, top:3, flash:4 };
@@ -294,7 +306,9 @@ const routeDates = r => [r.date, ...r.history.map(h => h.date)];
 const doneDate = r => r.doneDate || r.date;
 // data, pod którą droga liczy się w statystykach okresu
 const statDate = r => DONE(r.status) ? doneDate(r) : routeDates(r).sort().pop();
-const statusOn = (r, d) => { const h = r.history.filter(x => x.date === d).pop(); return h ? h.status : r.status; };
+const historyOn = (r, d) => r.history.filter(h => h.date === d).pop();
+const statusOn = (r, d) => historyOn(r, d)?.status || r.status;
+const sectorOn = (r, d) => historyOn(r, d)?.sector || r.sector;
 function wallTotals(w){
   const rs = D.routes.filter(r => r.wallId === w.id);
   const dates = [...new Set([...rs.flatMap(routeDates), ...D.visits.filter(v => v.wallId === w.id).map(v => v.date)])].sort().reverse();
@@ -400,7 +414,7 @@ const DB = {
 
 /* ---------- stan ---------- */
 let D = { walls:[], routes:[], months:{}, visits:[], settings:{ name:'Wspinaczu', homePrompt:'Co dzisiaj wpadło?' } };
-let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', periodYear:String(new Date().getFullYear()), gradeStatus:null, metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, baseMonth:today().slice(0, 7), detail:null, wall:null };
+let S = { tab:'home', filter:'all', wallF:'all', secF:null, q:'', period:'all', periodYear:String(new Date().getFullYear()), gradeStatus:null, metric:'visits', mMetric:'fives', year:new Date().getFullYear(), monthEdit:null, baseMonth:today().slice(0, 7), calendarMonth:today().slice(0, 7), calendarDay:today(), calendarWallId:null, detail:null, wall:null };
 let F = null; // stan formularza
 
 async function save(){
@@ -428,9 +442,9 @@ function render(){
   if(S.detail){ $tab.style.display = 'none'; $main.innerHTML = viewDetail(); return; }
   if(S.wall){ $tab.style.display = 'none'; $main.innerHTML = viewWall(); return; }
   $tab.style.display = '';
-  const v = { home:viewHome, routes:viewRoutes, stats:viewStats, map:viewMap, profile:viewProfile }[S.tab];
+  const v = { home:viewHome, calendar:viewCalendar, routes:viewRoutes, stats:viewStats, map:viewMap, profile:viewProfile }[S.tab];
   $main.innerHTML = v();
-  const tabs = [['home','Start',I.home],['routes','Drogi',I.route],['stats','Statystyki',I.chart],['map','Ścianki',I.pin],['profile','Profil',I.user]];
+  const tabs = [['home','Start',I.home],['calendar','Wyjścia',I.cal],['routes','Drogi',I.route],['stats','Statystyki',I.chart],['map','Ścianki',I.pin],['profile','Profil',I.user]];
   $tab.innerHTML = tabs.map(([k,l,i]) => `<button class="${S.tab===k?'on':''}" onclick="go('${k}')">${i}<span>${l}</span></button>`).join('');
 }
 function go(tab){ S.tab = tab; S.detail = null; S.wall = null; render(); $main.scrollTop = 0; }
@@ -467,9 +481,9 @@ async function delSector(wallId, i){
 }
 const sorted = arr => [...arr].sort((a,b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt);
 
-function statusInline(r){
-  const s = STATUSES[r.status];
-  const extra = r.status !== 'flash' && r.attempts > 1 ? ` <span class="muted">· ${r.attempts}</span>` : '';
+function statusInline(r, status = r.status){
+  const s = STATUSES[status];
+  const extra = status !== 'flash' && r.attempts > 1 ? ` <span class="muted">· ${r.attempts}</span>` : '';
   return `<span class="st ${s.cls}">${s.label} ${s.icon}${extra}</span>`;
 }
 const gradeBadge = g => `<span class="grade">${esc(g || '–')}</span>`;
@@ -504,6 +518,98 @@ function viewHome(){
       <div class="muted">${rs.length ? `${plRoutes(rs.length)}: ${statusSummary(rs.map(r => statusOn(r, lastDate)))}` : 'bez zapisanych dróg'}</div>
     </div>`).join('')}
     <button class="btn btn-primary" onclick="openForm()">${I.plus} Dodaj nową drogę</button>
+  </div>`;
+}
+
+/* KALENDARZ WYJŚĆ */
+function calendarEventDates(){
+  return new Set([...D.routes.flatMap(routeDates), ...D.visits.map(v => v.date)]);
+}
+function shiftCalendarMonth(delta){
+  const [year, month] = S.calendarMonth.split('-').map(Number);
+  const next = new Date(year, month - 1 + delta, 1);
+  S.calendarMonth = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}`;
+  const active = [...calendarEventDates()].filter(date => date.startsWith(S.calendarMonth)).sort();
+  S.calendarDay = active.length ? active[active.length - 1] : `${S.calendarMonth}-01`;
+  render();
+}
+async function addCalendarVisit(){
+  const wallId = S.calendarWallId, date = S.calendarDay;
+  if(!wallOf(wallId)) return;
+  const exists = D.visits.some(v => v.wallId === wallId && v.date === date)
+    || D.routes.some(r => r.wallId === wallId && routeDates(r).includes(date));
+  if(exists){ toast('Ta wizyta jest już zapisana'); return; }
+  D.visits.push({ wallId, date });
+  await save(); render();
+}
+function viewCalendar(){
+  if(!/^\d{4}-\d{2}$/.test(S.calendarMonth)) S.calendarMonth = today().slice(0, 7);
+  const [year, month] = S.calendarMonth.split('-').map(Number);
+  const monthDates = [...calendarEventDates()].filter(date => date.startsWith(S.calendarMonth)).sort();
+  if(!S.calendarDay.startsWith(S.calendarMonth)) S.calendarDay = monthDates.length ? monthDates[monthDates.length - 1] : `${S.calendarMonth}-01`;
+  if(!D.walls.some(w => w.id === S.calendarWallId)) S.calendarWallId = D.walls[0]?.id || null;
+  const firstOffset = (new Date(year, month - 1, 1).getDay() + 6) % 7;
+  const dayCount = new Date(year, month, 0).getDate();
+  const cellCount = Math.ceil((firstOffset + dayCount) / 7) * 7;
+  const events = calendarEventDates();
+  const dayCells = Array.from({ length:cellCount }, (_, i) => {
+    const number = i - firstOffset + 1;
+    if(number < 1 || number > dayCount) return '<span class="cal-day blank"></span>';
+    const date = `${S.calendarMonth}-${String(number).padStart(2, '0')}`;
+    const routes = D.routes.filter(r => r.date === date || r.history.some(h => h.date === date)).length;
+    const visited = events.has(date);
+    return `<button class="cal-day ${visited?'has-visit':''} ${S.calendarDay===date?'selected':''}" onclick="S.calendarDay='${date}';render()" aria-label="${fmtFull(date)}${visited?`, ${routes} dróg`:''}">
+      <span>${number}</span><span class="cal-day-count">${visited ? (routes ? `${routes} dr.` : 'wizyta') : ''}</span></button>`;
+  }).join('');
+  const wallDays = D.walls.map(w => ({
+    w,
+    visit:D.visits.some(v => v.wallId === w.id && v.date === S.calendarDay),
+    routes:D.routes.filter(r => r.wallId === w.id && routeDates(r).includes(S.calendarDay)),
+  })).filter(x => x.visit || x.routes.length);
+  const dayRoutes = wallDays.flatMap(x => x.routes.map(r => ({ r, wall:x.w })));
+  const doneCount = dayRoutes.filter(({ r }) => DONE(statusOn(r, S.calendarDay))).length;
+  const gradeSummary = GRADES.filter(g => dayRoutes.some(({ r }) => r.grade === g)).map(g => {
+    const atGrade = dayRoutes.filter(({ r }) => r.grade === g);
+    return `${g}: ${atGrade.filter(({ r }) => DONE(statusOn(r, S.calendarDay))).length}/${atGrade.length}`;
+  }).join(' · ');
+  const canAddVisit = S.calendarWallId && !D.visits.some(v => v.wallId === S.calendarWallId && v.date === S.calendarDay)
+    && !D.routes.some(r => r.wallId === S.calendarWallId && routeDates(r).includes(S.calendarDay));
+  return `
+  <div class="page slide">
+    <h1>Wyjścia</h1>
+    <div class="card">
+      <div class="row between" style="margin-bottom:14px">
+        <button class="iconbtn" onclick="shiftCalendarMonth(-1)" aria-label="Poprzedni miesiąc">${I.back}</button>
+        <h2 style="margin:0">${MONTHS_FULL[month - 1]} ${year}</h2>
+        <button class="iconbtn" onclick="shiftCalendarMonth(1)" aria-label="Następny miesiąc">${I.chev}</button>
+      </div>
+      <div class="weekdays">${['Pn','Wt','Śr','Cz','Pt','So','Nd'].map(d => `<span>${d}</span>`).join('')}</div>
+      <div class="calendar-grid">${dayCells}</div>
+    </div>
+    <div class="card">
+      <div class="row between" style="margin-bottom:10px">
+        <h2 style="margin:0">${fmtFull(S.calendarDay)}</h2>
+        <span class="muted">${wallDays.length} ${wallDays.length === 1 ? 'ścianka' : 'ścianki'} · ${dayRoutes.length} dróg · ${doneCount} zrobionych</span>
+      </div>
+      ${gradeSummary ? `<p class="muted" style="margin-bottom:10px">Poziomy zrobione/wszystkie: ${gradeSummary}</p>` : ''}
+      ${wallDays.length ? '' : '<div class="empty">Brak zapisanej wizyty w tym dniu.</div>'}
+    </div>
+    ${wallDays.map(({ w, routes }) => `<div class="card group">
+      <div class="group-h"><span class="grow">${esc(w.name)}</span><span class="muted">${routes.length ? plRoutes(routes.length) : 'wizyta bez dróg'}</span></div>
+      ${routes.map(r => { const status = statusOn(r, S.calendarDay), s = STATUSES[status], sector = sectorOn(r, S.calendarDay); return `
+        <button class="day-route" onclick="openDetail('${r.id}')">
+          <span class="dot" style="background:${r.color}"></span>${gradeBadge(r.grade)}
+          <span class="grow" style="min-width:0;text-align:left"><b class="ellipsis" style="display:block">${esc(routeTitle(r))}</b><span class="muted">${sector ? esc(sector) : 'bez miejsca'}</span></span>
+          <span class="st ${s.cls}">${s.label}</span>
+        </button>`; }).join('')}
+      <button class="mini" style="margin:8px 12px 12px" onclick="openForm(null,{wallId:'${w.id}',date:'${S.calendarDay}'})">${I.plus} Dodaj drogę</button>
+    </div>`).join('')}
+    <div class="card">
+      <div class="row" style="margin-top:12px">
+        <div class="field grow"><select onchange="S.calendarWallId=this.value;render()">${D.walls.map(w => `<option value="${w.id}" ${S.calendarWallId===w.id?'selected':''}>${esc(w.name)}</option>`).join('')}</select></div>
+        <button class="mini ${canAddVisit?'mini-p':''}" style="height:46px;padding:0 12px" onclick="addCalendarVisit()" ${canAddVisit?'':'disabled'}>${I.plus} Zapisz wizytę</button>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -739,6 +845,7 @@ function viewDetail(){
         ${r.removed ? '' : `<button class="btn btn-primary" style="height:44px;font-size:15px" onclick="openSession('${r.id}')">${I.plus} Kolejne podejście</button>`}
         <button class="btn btn-outline" style="height:44px;font-size:15px" onclick="setRemoved('${r.id}',${!r.removed})">${r.removed ? 'Przywróć do zrobienia' : 'Już jej nie ma'}</button>
       </div>` : ''}
+      ${DONE(r.status) ? `<button class="btn btn-outline" style="height:44px;font-size:15px;margin-bottom:20px" onclick="openSession('${r.id}')">${I.plus} Powtórzyłam tę drogę</button>` : ''}
       ${r.history.length ? `<h2>Historia podejść</h2><div style="margin-bottom:20px">${r.history.map(h => `
         <div class="hist"><b style="width:84px">${fmtFull(h.date)}</b><span class="${STATUSES[h.status].cls}" style="width:60px">${STATUSES[h.status].label}</span>
           <span class="muted">${plTries(h.attempts)}</span><span class="grow muted ellipsis">${esc(h.note)}</span></div>`).join('')}</div>` : ''}
@@ -798,8 +905,8 @@ function renderSession(){
 }
 async function saveSession(){
   const r = D.routes.find(x => x.id === G.id);
-  if(!r.history.length) r.history.push({ date:r.date, status:r.status, attempts:r.attempts, note:'' });
-  r.history.push({ date:G.date, status:G.status, attempts:G.attempts, note:G.note.trim() });
+  if(!r.history.length) r.history.push({ date:r.date, status:r.status, attempts:r.attempts, note:'', sector:r.sector });
+  r.history.push({ date:G.date, status:G.status, attempts:G.attempts, note:G.note.trim(), sector:r.sector });
   r.history.sort((a,b) => a.date.localeCompare(b.date));
   r.attempts += G.attempts;
   if(RANK[G.status] > RANK[r.status]){
